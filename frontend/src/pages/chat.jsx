@@ -25,8 +25,11 @@ export default function Chat() {
   const [showEmoji, setShowEmoji] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [online, setOnline] = useState(false);
+  const [isPeerTyping, setIsPeerTyping] = useState(false);
 
   const bottomRef = useRef();
+  const channelRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   const getSafeUser = async () => {
     try {
@@ -38,7 +41,6 @@ export default function Chat() {
   };
 
   useEffect(() => {
-    let messageChannel;
     let presenceChannel;
 
     const init = async () => {
@@ -59,9 +61,10 @@ export default function Chat() {
       await fetchMessages(activeUser.id);
       await markMessagesAsRead(activeUser.id, userId);
 
-      // 1. REALTIME MESSAGES & READ STATUS CHANNEL WITH UNIQUE ID
-      const msgChannelName = `chat-msg-${userId}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-      messageChannel = supabase.channel(msgChannelName);
+      // 1. REALTIME MESSAGES, READ STATUS & BROADCAST TYPING CHANNEL
+      const msgChannelName = `chat-room-${userId}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      const messageChannel = supabase.channel(msgChannelName);
+      channelRef.current = messageChannel;
 
       messageChannel
         .on(
@@ -88,9 +91,21 @@ export default function Chat() {
             }
           }
         )
+        .on("broadcast", { event: "typing" }, (payload) => {
+          if (payload.payload?.senderId === userId) {
+            setIsPeerTyping(payload.payload.isTyping);
+
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            if (payload.payload.isTyping) {
+              typingTimeoutRef.current = setTimeout(() => {
+                setIsPeerTyping(false);
+              }, 3500);
+            }
+          }
+        })
         .subscribe();
 
-      // 2. SUPABASE REALTIME PRESENCE CHANNEL WITH UNIQUE NAME AND EARLY CALLBACK REGISTRATION
+      // 2. SUPABASE REALTIME PRESENCE CHANNEL FOR ONLINE / OFFLINE TRACKING
       const presenceChannelName = `presence-room-${userId}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
       presenceChannel = supabase.channel(presenceChannelName, {
         config: {
@@ -100,7 +115,6 @@ export default function Chat() {
         },
       });
 
-      // Register presence callback BEFORE calling subscribe()
       presenceChannel
         .on('presence', { event: 'sync' }, () => {
           try {
@@ -128,24 +142,23 @@ export default function Chat() {
     init();
 
     return () => {
-      if (messageChannel) supabase.removeChannel(messageChannel);
+      if (channelRef.current) supabase.removeChannel(channelRef.current);
       if (presenceChannel) supabase.removeChannel(presenceChannel);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [userId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isPeerTyping]);
 
   const fetchMessages = async (currentUserId) => {
-    // 1. Fetch messages sent by current user to recipient
     const { data: sentData } = await supabase
       .from("messages")
       .select("*")
       .eq("sender_id", currentUserId)
       .eq("receiver_id", userId);
 
-    // 2. Fetch messages sent by recipient to current user
     const { data: receivedData } = await supabase
       .from("messages")
       .select("*")
@@ -172,21 +185,45 @@ export default function Chat() {
     }
   };
 
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setText(val);
+
+    if (channelRef.current && user) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { senderId: user.id, isTyping: val.trim().length > 0 }
+      });
+    }
+  };
+
   const sendMessage = async () => {
     if (!text.trim() || !user) return;
+
+    const currentText = text.trim();
+    setText("");
+    setShowEmoji(false);
+
+    // Stop broadcast typing state
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { senderId: user.id, isTyping: false }
+      });
+    }
 
     const { error } = await supabase.from("messages").insert([
       {
         sender_id: user.id,
         receiver_id: userId,
-        content: text.trim(),
+        content: currentText,
         is_read: false
       }
     ]);
 
     if (!error) {
-      setText("");
-      setShowEmoji(false);
       fetchMessages(user.id);
     }
   };
@@ -255,8 +292,8 @@ export default function Chat() {
 
                 <div className="chat-user-text">
                   <h2>{receiver?.username || "User"}</h2>
-                  <p className={online ? "status-online" : "status-offline"}>
-                    {online ? "Online" : "Offline"}
+                  <p className={isPeerTyping ? "status-typing" : (online ? "status-online" : "status-offline")}>
+                    {isPeerTyping ? "typing..." : (online ? "Online" : "Offline")}
                   </p>
                 </div>
               </div>
@@ -265,7 +302,7 @@ export default function Chat() {
 
           {/* CHAT MESSAGES BODY */}
           <div className="chat-body">
-            {messages.length === 0 ? (
+            {messages.length === 0 && !isPeerTyping ? (
               <div className="empty-chat-room" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
                 <p>No message history with {receiver?.username || "this user"} yet. Type a message below to start chatting!</p>
               </div>
@@ -304,6 +341,19 @@ export default function Chat() {
                 );
               })
             )}
+
+            {/* REAL-TIME TYPING BUBBLE */}
+            {isPeerTyping && (
+              <div className="message-row received-row">
+                <div className="message-bubble received typing-indicator-bubble">
+                  <span className="typing-dot"></span>
+                  <span className="typing-dot"></span>
+                  <span className="typing-dot"></span>
+                  <span className="typing-text">{receiver?.username || "User"} is typing...</span>
+                </div>
+              </div>
+            )}
+
             <div ref={bottomRef} />
           </div>
 
@@ -337,7 +387,7 @@ export default function Chat() {
                 className="clay-input"
                 placeholder={uploading ? "Uploading file..." : "Type your message..."}
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={handleInputChange}
                 onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                 disabled={uploading}
               />

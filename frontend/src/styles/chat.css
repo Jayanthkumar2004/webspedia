@@ -108,6 +108,17 @@
   color: var(--text-muted) !important;
 }
 
+.status-typing {
+  color: var(--accent-primary) !important;
+  font-style: italic;
+  animation: pulseTypingText 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseTypingText {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .chat-body {
   flex: 1;
   overflow-y: auto;
@@ -183,6 +194,54 @@
 
 .message-bubble.received .message-meta {
   color: var(--text-secondary) !important;
+}
+
+/* TYPING INDICATOR BUBBLE */
+.typing-indicator-bubble {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px;
+  padding: 10px 16px !important;
+  border-radius: 18px !important;
+}
+
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  display: inline-block;
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+.typing-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-left: 4px;
 }
 
 .file-link {
