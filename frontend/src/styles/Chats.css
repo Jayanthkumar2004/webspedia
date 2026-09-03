@@ -158,6 +158,30 @@
   font-weight: 700;
 }
 
+.chat-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delete-icon-btn {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-clay);
+}
+
+.delete-icon-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  transform: scale(1.08);
+}
+
 .chat-arrow {
   color: var(--accent-primary);
 }

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { MessageSquare, Search, ArrowRight, Sparkles } from 'lucide-react';
+import { MessageSquare, Search, ArrowRight, Sparkles, Trash2 } from 'lucide-react';
 import '../styles/Chats.css';
 
 export default function Chats() {
@@ -107,14 +107,12 @@ export default function Chats() {
 
     setLoading(true);
 
-    // Fetch all user messages involving current user
     const { data: messages } = await supabase
       .from('messages')
       .select('*')
       .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
       .order('created_at', { ascending: false });
 
-    // Fetch all profiles except current user
     const { data: users } = await supabase
       .from('profiles')
       .select('*')
@@ -144,6 +142,32 @@ export default function Chats() {
 
     setProfiles(formatted);
     setLoading(false);
+  };
+
+  const deleteChatHistory = async (targetUserId, targetUsername, e) => {
+    e.stopPropagation();
+    if (!currentUser) return;
+    const confirmDelete = window.confirm(`Are you sure you want to delete all messages with ${targetUsername || "this user"}?`);
+    if (!confirmDelete) return;
+
+    try {
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', currentUser.id)
+        .eq('receiver_id', targetUserId);
+
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', targetUserId)
+        .eq('receiver_id', currentUser.id);
+
+      loadUsers(currentUser);
+      alert("Chat history deleted.");
+    } catch (err) {
+      alert("Delete failed: " + err.message);
+    }
   };
 
   const filteredProfiles = profiles.filter(profile =>
@@ -231,7 +255,17 @@ export default function Chats() {
 
                     <div className="chat-user-right">
                       <span className="chat-time">{formatTime(profile.lastTime)}</span>
-                      <ArrowRight size={14} className="chat-arrow" />
+                      <div className="chat-card-actions">
+                        <button
+                          className="delete-icon-btn"
+                          onClick={(e) => deleteChatHistory(profile.id, profile.username, e)}
+                          title="Delete Chat"
+                          type="button"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <ArrowRight size={14} className="chat-arrow" />
+                      </div>
                     </div>
                   </div>
                 );

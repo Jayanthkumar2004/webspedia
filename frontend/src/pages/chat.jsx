@@ -9,7 +9,12 @@ import {
   ArrowLeft,
   Check,
   CheckCheck,
-  FileText
+  FileText,
+  Trash2,
+  User,
+  X,
+  Mail,
+  Calendar
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import "../styles/chat.css";
@@ -26,6 +31,7 @@ export default function Chat() {
   const [uploading, setUploading] = useState(false);
   const [online, setOnline] = useState(false);
   const [isPeerTyping, setIsPeerTyping] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   const bottomRef = useRef();
   const channelRef = useRef(null);
@@ -185,6 +191,32 @@ export default function Chat() {
     }
   };
 
+  const deleteChat = async () => {
+    if (!user) return;
+    const confirmDelete = window.confirm(`Are you sure you want to delete all messages with ${receiver?.username || "this user"}?`);
+    if (!confirmDelete) return;
+
+    try {
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', user.id)
+        .eq('receiver_id', userId);
+
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', userId)
+        .eq('receiver_id', user.id);
+
+      setMessages([]);
+      alert("Chat history deleted successfully.");
+      navigate("/chats");
+    } catch (err) {
+      alert("Delete failed: " + err.message);
+    }
+  };
+
   const handleInputChange = (e) => {
     const val = e.target.value;
     setText(val);
@@ -205,7 +237,6 @@ export default function Chat() {
     setText("");
     setShowEmoji(false);
 
-    // Stop broadcast typing state
     if (channelRef.current) {
       channelRef.current.send({
         type: 'broadcast',
@@ -278,7 +309,7 @@ export default function Chat() {
                 <ArrowLeft size={16} />
               </button>
 
-              <div className="chat-user-info">
+              <div className="chat-user-info" onClick={() => setShowContactModal(true)} style={{ cursor: 'pointer' }}>
                 <div className="chat-user-avatar">
                   {receiver?.avatar_url ? (
                     <img src={receiver.avatar_url} alt="" />
@@ -297,6 +328,29 @@ export default function Chat() {
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* HEADER ACTIONS: CONTACT INFO & DELETE CHAT */}
+            <div className="chat-header-actions">
+              <button
+                className="clay-btn header-action-btn"
+                onClick={() => setShowContactModal(true)}
+                type="button"
+                title="View Contact Info"
+              >
+                <User size={16} />
+                <span className="btn-label-desktop">Contact</span>
+              </button>
+
+              <button
+                className="clay-btn header-action-btn delete-chat-btn"
+                onClick={deleteChat}
+                type="button"
+                title="Delete Chat History"
+              >
+                <Trash2 size={16} />
+                <span className="btn-label-desktop">Delete Chat</span>
+              </button>
             </div>
           </div>
 
@@ -399,6 +453,54 @@ export default function Chat() {
           </div>
         </div>
       </main>
+
+      {/* CONTACT INFO MODAL */}
+      {showContactModal && receiver && (
+        <div className="contact-modal-overlay" onClick={() => setShowContactModal(false)}>
+          <div className="contact-modal-card clay-card" onClick={e => e.stopPropagation()}>
+            <div className="contact-modal-header">
+              <h3>Contact Profile</h3>
+              <button className="clay-btn close-modal-btn" onClick={() => setShowContactModal(false)} type="button">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="contact-modal-body">
+              <div className="contact-avatar-big">
+                {receiver.avatar_url ? (
+                  <img src={receiver.avatar_url} alt="" />
+                ) : (
+                  <div className="default-avatar-big">
+                    {(receiver.username || "U").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className={`online-dot-big ${online ? 'active' : ''}`}></span>
+              </div>
+
+              <h2>{receiver.username || "Community Member"}</h2>
+              <p className="contact-status-text">{online ? "Online Now" : "Offline"}</p>
+
+              <div className="contact-details-list">
+                <div className="contact-detail-item">
+                  <Mail size={16} className="detail-icon" />
+                  <div>
+                    <span>Email Address</span>
+                    <p>{receiver.email || "Registered User"}</p>
+                  </div>
+                </div>
+
+                <div className="contact-detail-item">
+                  <Calendar size={16} className="detail-icon" />
+                  <div>
+                    <span>Joined Date</span>
+                    <p>{receiver.created_at ? new Date(receiver.created_at).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
