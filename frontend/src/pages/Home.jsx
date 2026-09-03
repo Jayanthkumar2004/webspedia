@@ -5,7 +5,7 @@ import BannerSlider from '../components/BannerSlider';
 import FeedbackSection from '../components/FeedbackSection';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
-import { Search, ChevronLeft, ChevronRight, Sparkles, Layers, Cpu, Code, PenTool, Flame } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Sparkles, Cpu, Code, PenTool, Image as ImageIcon, Flame } from 'lucide-react';
 import '../styles/home.css';
 
 export default function Home() {
@@ -35,91 +35,108 @@ export default function Home() {
     fetchTools();
   }, []);
 
+  const categories = [
+    'All',
+    'Writing',
+    'Design',
+    'Coding',
+    'Marketing',
+    'Productivity',
+    'Video',
+    'Audio',
+    'Research',
+    'Education',
+    'Business'
+  ];
+
+  const filteredTools = tools
+    .map(tool => {
+      const query = search.toLowerCase().trim();
+      if (!query) return { tool, score: 1 };
+
+      let score = 0;
+      if (tool.title?.toLowerCase().includes(query)) score += 3;
+      if (tool.category?.toLowerCase().includes(query)) score += 2;
+      if (tool.description?.toLowerCase().includes(query)) score += 1;
+
+      return score > 0 ? { tool, score } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score)
+    .map(item => item.tool)
+    .filter(tool => category === 'All' || tool.category === category);
+
   const scrollLeft = () => {
-    scrollRef.current?.scrollBy({ left: -260, behavior: 'smooth' });
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
   };
 
   const scrollRight = () => {
-    scrollRef.current?.scrollBy({ left: 260, behavior: 'smooth' });
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
   };
-
-  const categories = [
-    'All',
-    'AI Assistant',
-    'Code Generation',
-    'Copywriting',
-    'Design & Image',
-    'Video & Audio',
-    'Productivity',
-    'Marketing',
-    'Developer Tools',
-  ];
-
-  const filteredTools = tools.filter((tool) => {
-    const matchesSearch =
-      tool.title?.toLowerCase().includes(search.toLowerCase()) ||
-      tool.description?.toLowerCase().includes(search.toLowerCase()) ||
-      tool.tags?.some((t) => t.toLowerCase().includes(search.toLowerCase()));
-
-    const matchesCategory = category === 'All' || tool.category === category;
-
-    return matchesSearch && matchesCategory;
-  });
 
   return (
     <div className="page-container">
       <Navbar />
 
       <main className="main-content">
-        {/* HERO SECTION WITH CLAYMORPHISM SPLIT DESIGN */}
-        <section className="hero-section">
-          <div className="hero-split-card clay-card">
-            <div className="hero-left-text">
-              <div className="hero-badge clay-pill">
-                <Sparkles size={14} className="icon-sparkle" />
-                <span>Next-Gen AI Directory</span>
-              </div>
-
-              <h1 className="hero-title">
-                Discover & Benchmark <br />
-                <span className="gradient-text">Top AI Tools</span>
-              </h1>
-
-              <p className="hero-subtitle">
-                Explore curated artificial intelligence software, read community reviews, bookmark your favorites, and boost your workflow.
-              </p>
-
-              {/* SEARCH INPUT BAR */}
-              <div className="search-container">
-                <div className="search-box clay-inset">
-                  <Search className="search-icon" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Search AI tools by name, tag, or topic..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <button className="search-btn clay-button-primary" type="button">
-                  Explore
-                </button>
-              </div>
-
-              {/* METRIC PILLS */}
-              <div className="hero-stats">
-                <div className="stat-pill clay-surface">
-                  <Layers size={16} color="var(--accent-primary)" />
-                  <span>{tools.length}+ Verified Tools</span>
-                </div>
-                <div className="stat-pill clay-surface">
-                  <Sparkles size={16} color="#10b981" />
-                  <span>Community Rated</span>
-                </div>
-              </div>
+        {/* SPLIT HERO SECTION WITH 3D CLAY VISUAL */}
+        <section className="hero-split-card clay-surface">
+          <div className="hero-left-content">
+            <div className="hero-badge clay-badge">
+              <Sparkles size={14} />
+              <span>Modern AI Discovery Platform</span>
             </div>
 
-            {/* HERO RIGHT 3D CARDS VISUAL */}
-            <div className="hero-right-visual">
+            <h1 className="hero-title">
+              Discover the right <br />
+              <span className="gradient-text">AI tools</span> for your workflow.
+            </h1>
+
+            <p className="hero-subtitle">
+              Find, compare, and integrate top-rated AI tools for writing, coding, design, research, and automation.
+            </p>
+
+            {/* SEARCH BAR */}
+            <div className="search-container">
+              <div className="search-input-wrapper">
+                <Search className="search-icon" size={18} />
+                <input
+                  className="clay-input search-input"
+                  placeholder="Search AI tools, categories..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <button className="clay-button clay-button-primary search-btn" type="button">
+                <span>Search</span>
+              </button>
+            </div>
+
+            {/* POPULAR CATEGORIES TAGS */}
+            <div className="popular-tags-row">
+              <span className="popular-label">Popular:</span>
+              <button className="tag-pill clay-pill" onClick={() => setCategory('Writing')} type="button">
+                <PenTool size={12} />
+                <span>Writing</span>
+              </button>
+              <button className="tag-pill clay-pill" onClick={() => setCategory('Design')} type="button">
+                <ImageIcon size={12} />
+                <span>Design</span>
+              </button>
+              <button className="tag-pill clay-pill" onClick={() => setCategory('Coding')} type="button">
+                <Code size={12} />
+                <span>Coding</span>
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT 3D CLAY VISUAL COMPOSITION */}
+          <div className="hero-right-visual">
+            <div className="clay-visual-container">
               <div className="floating-clay-card card-1 clay-raised">
                 <div className="card-icon-box clay-inset">
                   <Cpu size={22} color="var(--accent-primary)" />
