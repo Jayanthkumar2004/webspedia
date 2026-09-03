@@ -64,14 +64,14 @@ export default function PromotedWebsites() {
               <Sparkles size={12} color="var(--accent-primary)" />
               <span>Recommended Ecosystem</span>
             </span>
-            <h2>Promoted Websites & Partners</h2>
-            <p>Explore curated external platforms, developer tools, and partner websites recommended by Webspedia.</p>
+            <h2>Our Websites</h2>
+            <p>Explore curated external platforms, developer tools, and official websites by Webspedia.</p>
           </div>
         </div>
 
         {loading ? (
           <div className="loading-websites clay-surface">
-            <p>Loading promoted websites...</p>
+            <p>Loading websites...</p>
           </div>
         ) : (
           <div className="promoted-grid">
@@ -93,7 +93,7 @@ export default function PromotedWebsites() {
 
                 <div className="site-card-body">
                   <h3>{site.title}</h3>
-                  <p>{site.description || 'Visit partner website for more details.'}</p>
+                  <p>{site.description || 'Visit website for more details.'}</p>
                 </div>
 
                 <div className="site-card-footer">

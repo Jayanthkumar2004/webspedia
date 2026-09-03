@@ -162,10 +162,10 @@ export default function WebsitesManager() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
               <Globe size={24} color="var(--accent-primary)" />
-              <h2 style={{ fontSize: "24px", fontWeight: "900", margin: 0 }}>Promoted Websites Management</h2>
+              <h2 style={{ fontSize: "24px", fontWeight: "900", margin: 0 }}>Our Websites Management</h2>
             </div>
             <p style={{ color: "var(--text-muted)", fontSize: "14px", margin: 0 }}>
-              Create, inspect, update, or remove external partner website links displayed on the Home page.
+              Create, inspect, update, or remove website links displayed in the Our Websites section on the Home page.
             </p>
           </div>
 

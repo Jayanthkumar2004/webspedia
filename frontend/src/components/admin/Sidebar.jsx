@@ -9,7 +9,7 @@ export default function Sidebar({ active, setActive }) {
     { name: "Dashboard", icon: <LayoutDashboard size={18} /> },
     { name: "Tools", icon: <Wrench size={18} /> },
     { name: "Banners", icon: <Megaphone size={18} /> },
-    { name: "Websites", icon: <Globe size={18} /> },
+    { name: "Our Websites", icon: <Globe size={18} /> },
     { name: "Feedback", icon: <MessageSquareHeart size={18} /> },
     { name: "Users", icon: <Users size={18} /> },
     { name: "Analytics", icon: <BarChart3 size={18} /> }

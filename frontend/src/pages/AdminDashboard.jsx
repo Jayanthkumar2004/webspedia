@@ -98,9 +98,9 @@ export default function AdminDashboard() {
                     <Wrench size={16} />
                     <span>Manage Catalog</span>
                   </ClayButton>
-                  <ClayButton onClick={() => setActive("Websites")}>
+                  <ClayButton onClick={() => setActive("Our Websites")}>
                     <Globe size={16} />
-                    <span>Promoted Sites</span>
+                    <span>Our Websites</span>
                   </ClayButton>
                 </div>
               </div>
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
         )}
 
         {/* WEBSITES TAB */}
-        {active === "Websites" && (
+        {active === "Our Websites" && (
           <div className="websites-tab-view">
             <WebsitesManager />
           </div>
