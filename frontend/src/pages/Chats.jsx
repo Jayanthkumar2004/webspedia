@@ -112,33 +112,47 @@ export default function Chats() {
       removedContacts = JSON.parse(localStorage.getItem('deleted_contacts') || '{}');
     } catch {}
 
+    // Fetch messages where active user is sender or receiver
     const { data: messages } = await supabase
       .from('messages')
       .select('*')
       .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
       .order('created_at', { ascending: false });
 
+    // Collect IDs of users with whom active user has message history
+    const lastMessages = {};
+    const partnerIds = new Set();
+
+    (messages || []).forEach(msg => {
+      const otherUserId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+      if (otherUserId && otherUserId !== user.id) {
+        partnerIds.add(otherUserId);
+        if (!lastMessages[otherUserId]) {
+          lastMessages[otherUserId] = {
+            text: msg.content || (msg.file_url ? 'Attachment' : ''),
+            time: msg.created_at
+          };
+        }
+      }
+    });
+
+    if (partnerIds.size === 0) {
+      setProfiles([]);
+      setLoading(false);
+      return;
+    }
+
+    // Fetch profiles ONLY for selected active chat partners
     const { data: users } = await supabase
       .from('profiles')
       .select('*')
-      .neq('id', user.id);
-
-    const lastMessages = {};
-    (messages || []).forEach(msg => {
-      const otherUserId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-      if (!lastMessages[otherUserId]) {
-        lastMessages[otherUserId] = {
-          text: msg.content || (msg.file_url ? 'Attachment' : ''),
-          time: msg.created_at
-        };
-      }
-    });
+      .in('id', Array.from(partnerIds));
 
     const formatted = (users || [])
       .filter(profile => !removedContacts[profile.id])
       .map(profile => ({
         ...profile,
-        lastMessage: lastMessages[profile.id]?.text || "No messages yet. Click to chat!",
+        lastMessage: lastMessages[profile.id]?.text || "No messages yet",
         lastTime: lastMessages[profile.id]?.time || ""
       }))
       .sort((a, b) => {
@@ -247,7 +261,7 @@ export default function Chats() {
                 <input
                   type="text"
                   className="clay-input"
-                  placeholder="Search members..."
+                  placeholder="Search conversations..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -263,7 +277,7 @@ export default function Chats() {
 
               {!loading && filteredProfiles.length === 0 && (
                 <div className="empty-chat">
-                  <p>No user profiles found in database.</p>
+                  <p>No active conversations yet. Visit a community profile or click "Chat" on a tool review to start messaging!</p>
                 </div>
               )}
 
@@ -331,7 +345,7 @@ export default function Chats() {
                 <Sparkles size={36} color="#ffffff" />
               </div>
               <h1>Your Direct Messages</h1>
-              <p>Select any community member from the left sidebar to start chatting in real-time about AI tools, recommendations, and reviews.</p>
+              <p>Select any active conversation partner from the left sidebar to start chatting in real-time about AI tools, recommendations, and reviews.</p>
             </div>
           </div>
         </div>
