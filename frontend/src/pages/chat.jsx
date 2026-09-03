@@ -12,6 +12,7 @@ import {
   FileText,
   Trash2,
   User,
+  UserX,
   X,
   Mail,
   Calendar
@@ -217,6 +218,39 @@ export default function Chat() {
     }
   };
 
+  const deleteContact = async () => {
+    if (!user) return;
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${receiver?.username || "this contact"} and clear all chat history?`);
+    if (!confirmDelete) return;
+
+    try {
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', user.id)
+        .eq('receiver_id', userId);
+
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', userId)
+        .eq('receiver_id', user.id);
+
+      let removed = {};
+      try {
+        removed = JSON.parse(localStorage.getItem('deleted_contacts') || '{}');
+      } catch {}
+      removed[userId] = true;
+      localStorage.setItem('deleted_contacts', JSON.stringify(removed));
+
+      alert(`${receiver?.username || "Contact"} deleted successfully.`);
+      setShowContactModal(false);
+      navigate("/chats");
+    } catch (err) {
+      alert("Delete contact failed: " + err.message);
+    }
+  };
+
   const handleInputChange = (e) => {
     const val = e.target.value;
     setText(val);
@@ -330,7 +364,7 @@ export default function Chat() {
               </div>
             </div>
 
-            {/* HEADER ACTIONS: CONTACT INFO & DELETE CHAT */}
+            {/* HEADER ACTIONS: CONTACT INFO, DELETE CHAT, DELETE CONTACT */}
             <div className="chat-header-actions">
               <button
                 className="clay-btn header-action-btn"
@@ -350,6 +384,16 @@ export default function Chat() {
               >
                 <Trash2 size={16} />
                 <span className="btn-label-desktop">Delete Chat</span>
+              </button>
+
+              <button
+                className="clay-btn header-action-btn delete-contact-btn"
+                onClick={deleteContact}
+                type="button"
+                title="Delete Contact"
+              >
+                <UserX size={16} />
+                <span className="btn-label-desktop">Delete Contact</span>
               </button>
             </div>
           </div>
@@ -497,6 +541,17 @@ export default function Chat() {
                   </div>
                 </div>
               </div>
+
+              {/* DELETE CONTACT MODAL BUTTON */}
+              <button
+                className="clay-button delete-contact-modal-btn"
+                onClick={deleteContact}
+                type="button"
+                style={{ marginTop: '20px', width: '100%', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }}
+              >
+                <UserX size={16} />
+                <span>Delete Contact</span>
+              </button>
             </div>
           </div>
         </div>

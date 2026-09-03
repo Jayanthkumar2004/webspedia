@@ -130,18 +130,18 @@
   50% { opacity: 0.5; }
 }
 
-/* HEADER ACTIONS: CONTACT & DELETE CHAT */
+/* HEADER ACTIONS: CONTACT INFO, DELETE CHAT, DELETE CONTACT */
 .chat-header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .header-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 700;
@@ -158,13 +158,23 @@
 }
 
 .delete-chat-btn {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .delete-chat-btn:hover {
-  background: rgba(239, 68, 68, 0.22);
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.delete-contact-btn {
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
+  border: 1px solid rgba(225, 29, 72, 0.25);
+}
+
+.delete-contact-btn:hover {
+  background: rgba(225, 29, 72, 0.22);
 }
 
 .chat-body {

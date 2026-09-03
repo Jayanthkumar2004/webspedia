@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { MessageSquare, Search, ArrowRight, Sparkles, Trash2 } from 'lucide-react';
+import { MessageSquare, Search, ArrowRight, Sparkles, Trash2, UserX } from 'lucide-react';
 import '../styles/Chats.css';
 
 export default function Chats() {
@@ -107,6 +107,11 @@ export default function Chats() {
 
     setLoading(true);
 
+    let removedContacts = {};
+    try {
+      removedContacts = JSON.parse(localStorage.getItem('deleted_contacts') || '{}');
+    } catch {}
+
     const { data: messages } = await supabase
       .from('messages')
       .select('*')
@@ -129,16 +134,19 @@ export default function Chats() {
       }
     });
 
-    const formatted = (users || []).map(profile => ({
-      ...profile,
-      lastMessage: lastMessages[profile.id]?.text || "No messages yet. Click to chat!",
-      lastTime: lastMessages[profile.id]?.time || ""
-    })).sort((a, b) => {
-      if (a.lastTime && b.lastTime) {
-        return new Date(b.lastTime) - new Date(a.lastTime);
-      }
-      return a.lastTime ? -1 : 1;
-    });
+    const formatted = (users || [])
+      .filter(profile => !removedContacts[profile.id])
+      .map(profile => ({
+        ...profile,
+        lastMessage: lastMessages[profile.id]?.text || "No messages yet. Click to chat!",
+        lastTime: lastMessages[profile.id]?.time || ""
+      }))
+      .sort((a, b) => {
+        if (a.lastTime && b.lastTime) {
+          return new Date(b.lastTime) - new Date(a.lastTime);
+        }
+        return a.lastTime ? -1 : 1;
+      });
 
     setProfiles(formatted);
     setLoading(false);
@@ -167,6 +175,39 @@ export default function Chats() {
       alert("Chat history deleted.");
     } catch (err) {
       alert("Delete failed: " + err.message);
+    }
+  };
+
+  const deleteContactItem = async (targetUserId, targetUsername, e) => {
+    e.stopPropagation();
+    if (!currentUser) return;
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${targetUsername || "this contact"} from your list?`);
+    if (!confirmDelete) return;
+
+    try {
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', currentUser.id)
+        .eq('receiver_id', targetUserId);
+
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', targetUserId)
+        .eq('receiver_id', currentUser.id);
+
+      let removed = {};
+      try {
+        removed = JSON.parse(localStorage.getItem('deleted_contacts') || '{}');
+      } catch {}
+      removed[targetUserId] = true;
+      localStorage.setItem('deleted_contacts', JSON.stringify(removed));
+
+      loadUsers(currentUser);
+      alert(`${targetUsername || "Contact"} deleted.`);
+    } catch (err) {
+      alert("Delete contact failed: " + err.message);
     }
   };
 
@@ -259,11 +300,21 @@ export default function Chats() {
                         <button
                           className="delete-icon-btn"
                           onClick={(e) => deleteChatHistory(profile.id, profile.username, e)}
-                          title="Delete Chat"
+                          title="Delete Chat History"
                           type="button"
                         >
                           <Trash2 size={14} />
                         </button>
+
+                        <button
+                          className="delete-contact-icon-btn"
+                          onClick={(e) => deleteContactItem(profile.id, profile.username, e)}
+                          title="Delete Contact"
+                          type="button"
+                        >
+                          <UserX size={14} />
+                        </button>
+
                         <ArrowRight size={14} className="chat-arrow" />
                       </div>
                     </div>
