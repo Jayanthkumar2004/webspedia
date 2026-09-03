@@ -15,8 +15,6 @@ import {
   Activity,
   BarChart3,
   Wrench,
-  Users,
-  Megaphone,
   MessageSquareHeart
 } from 'lucide-react';
 import '../styles/admin.css';
@@ -66,8 +64,8 @@ export default function AdminDashboard() {
               <Sparkles size={14} />
               <span>Admin SaaS Control Center</span>
             </ClayBadge>
-            <h1 style={{ fontSize: "28px", fontWeight: "900", margin: "4px 0" }}>{active} Workspace</h1>
-            <p style={{ color: "var(--text-muted)", fontSize: "14px", margin: 0 }}>
+            <h1 className="admin-title">{active} Workspace</h1>
+            <p className="admin-subtitle">
               Monitor platform metrics, manage published AI tools, promotional banners, inspect user feedback, and supervise accounts.
             </p>
           </div>
@@ -81,8 +79,8 @@ export default function AdminDashboard() {
         {active === "Dashboard" && (
           <div className="dashboard-view">
             {/* HERO BANNER CARD */}
-            <ClayCard elevated className="dashboard-hero" style={{ padding: "32px", marginBottom: "28px" }}>
-              <div className="dashboard-hero-content" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <ClayCard elevated className="dashboard-hero-card">
+              <div className="dashboard-hero-content">
                 <div>
                   <ClayBadge style={{ marginBottom: "12px" }}>
                     <Activity size={14} />
@@ -93,7 +91,7 @@ export default function AdminDashboard() {
                     Manage tool catalog additions, update user permissions, inspect user feedback submissions, and manage ad banners.
                   </p>
                 </div>
-                <div className="hero-buttons" style={{ display: "flex", gap: "12px" }}>
+                <div className="hero-buttons">
                   <ClayButton variant="primary" onClick={() => setActive("Tools")}>
                     <Wrench size={16} />
                     <span>Manage Catalog</span>
@@ -110,7 +108,7 @@ export default function AdminDashboard() {
             <StatsCards />
 
             {/* ANALYTICS CHART PREVIEW */}
-            <ClayCard elevated className="analytics-card" style={{ marginTop: "28px", padding: "28px" }}>
+            <ClayCard elevated className="analytics-card" style={{ marginTop: "28px" }}>
               <div className="analytics-header" style={{ marginBottom: "20px" }}>
                 <div className="analytics-title-group" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <BarChart3 size={20} color="var(--accent-primary)" />
@@ -123,8 +121,8 @@ export default function AdminDashboard() {
             </ClayCard>
 
             {/* RECENT TOOLS & USERS GRID */}
-            <div className="dashboard-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginTop: "28px" }}>
-              <ClayCard elevated style={{ padding: "24px" }}>
+            <div className="dashboard-bottom-grid">
+              <ClayCard elevated className="dashboard-panel-card">
                 <div className="panel-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
                   <h3 style={{ fontSize: "18px", fontWeight: "800", margin: 0 }}>Recent Tool Additions</h3>
                   <ClayButton size="sm" onClick={() => setActive("Tools")}>View All</ClayButton>
@@ -142,7 +140,7 @@ export default function AdminDashboard() {
                 </div>
               </ClayCard>
 
-              <ClayCard elevated style={{ padding: "24px" }}>
+              <ClayCard elevated className="dashboard-panel-card">
                 <div className="panel-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
                   <h3 style={{ fontSize: "18px", fontWeight: "800", margin: 0 }}>New Registered Users</h3>
                   <ClayButton size="sm" onClick={() => setActive("Users")}>View All</ClayButton>
