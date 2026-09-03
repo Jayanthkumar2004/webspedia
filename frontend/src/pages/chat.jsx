@@ -428,9 +428,9 @@ export default function Chat() {
                         <span>{formatTime(msg.created_at)}</span>
                         {isSent && (
                           isRead ? (
-                            <CheckCheck size={14} className="seen-icon read" color="#6366f1" title="Seen (Double Tick)" />
+                            <CheckCheck size={15} className="seen-icon read" color="#38bdf8" title="Seen (Double Blue Tick)" />
                           ) : (
-                            <Check size={14} className="seen-icon unread" color="var(--text-muted)" title="Sent (Single Tick)" />
+                            <Check size={15} className="seen-icon unread" color="rgba(255, 255, 255, 0.85)" title="Sent (Single White Tick)" />
                           )
                         )}
                       </div>

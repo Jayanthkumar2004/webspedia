@@ -258,6 +258,17 @@
   color: var(--text-secondary) !important;
 }
 
+.seen-icon.read {
+  color: #38bdf8 !important;
+  stroke: #38bdf8 !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.seen-icon.unread {
+  color: rgba(255, 255, 255, 0.9) !important;
+  stroke: rgba(255, 255, 255, 0.9) !important;
+}
+
 /* TYPING INDICATOR BUBBLE */
 .typing-indicator-bubble {
   display: inline-flex !important;
