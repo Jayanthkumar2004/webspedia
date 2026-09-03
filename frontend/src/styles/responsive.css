@@ -1,8 +1,8 @@
 /* =========================================================
-   UNIVERSAL SYSTEM & DEVICE COMPATIBILITY STYLES
+   UNIVERSAL MOBILE & MULTI-DEVICE COMPATIBILITY STYLES
 ========================================================= */
 
-/* 1. Global Scaling Reset & Box Sizing */
+/* 1. Global Reset & Touch Optimization */
 html {
   box-sizing: border-box;
   -webkit-text-size-adjust: 100%;
@@ -22,13 +22,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Fluid Media Compatibility */
+/* Fluid Media & Images */
 img, video, canvas, svg {
   max-width: 100%;
   height: auto;
 }
 
-/* 2. Container Max Width Bounds for High Resolution Monitors */
+/* 2. Container Max Width Bounds */
 .main-content,
 .chats-main-wrapper,
 .tool-details-wrapper,
@@ -38,18 +38,18 @@ img, video, canvas, svg {
   margin: 0 auto;
 }
 
-/* 3. System Scaling & High-DPI Screens (125% / 150% Windows Scaling) */
-@media screen and (max-resolution: 120dpi), screen and (max-width: 1440px) {
+/* 3. Laptops & High-DPI Display Scaling (125% / 150%) */
+@media screen and (max-width: 1280px) {
   .hero-title {
-    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
   }
 }
 
-/* 4. Tablets & Medium Displays (<= 1024px) */
-@media screen and (max-width: 1024px) {
+/* 4. Tablet Screen Breakpoint (<= 992px) */
+@media screen and (max-width: 992px) {
   .hero-split-card {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 24px;
   }
   
   .hero-right-visual {
@@ -63,12 +63,134 @@ img, video, canvas, svg {
   .tools-grid {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
+
+  .chats-container {
+    grid-template-columns: 1fr !important;
+  }
+
+  .chat-welcome {
+    display: none !important;
+  }
 }
 
-/* 5. Small Tablets & Mobile Devices (<= 768px) */
+/* 5. Smartphone Mobile Breakpoint (<= 768px) */
 @media screen and (max-width: 768px) {
+  /* NAVBAR MOBILE COMPATIBILITY */
+  .navbar {
+    padding: 10px 16px !important;
+  }
+
+  .logo h2 {
+    font-size: 18px !important;
+  }
+
+  .logo-icon-clay {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .nav-right {
+    gap: 8px !important;
+  }
+
+  .nav-links {
+    gap: 4px !important;
+  }
+
+  .nav-item {
+    padding: 6px 10px !important;
+  }
+
+  .nav-item span {
+    display: none !important;
+  }
+
+  .nav-admin-btn span {
+    display: none !important;
+  }
+
+  .logout-btn span {
+    display: none !important;
+  }
+
+  .logout-btn {
+    padding: 8px 10px !important;
+  }
+
+  /* CHATS LIST MOBILE COMPATIBILITY */
+  .chats-main-wrapper {
+    padding: 12px !important;
+  }
+
+  .chat-sidebar {
+    padding: 16px !important;
+  }
+
+  .chat-user-card {
+    padding: 12px !important;
+  }
+
+  /* INDIVIDUAL CHAT ROOM MOBILE COMPATIBILITY */
+  .chat-page-main {
+    padding: 8px !important;
+  }
+
+  .chat-wrapper {
+    height: calc(100vh - 75px) !important;
+    border-radius: 16px !important;
+  }
+
+  .chat-header {
+    padding: 12px 14px !important;
+  }
+
+  .chat-user-avatar {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .chat-user-text h2 {
+    font-size: 16px !important;
+  }
+
+  .chat-body {
+    padding: 14px 10px !important;
+    gap: 10px !important;
+  }
+
+  .message-bubble {
+    max-width: 86% !important;
+    padding: 10px 14px !important;
+  }
+
+  .chat-input-wrapper {
+    padding: 10px 12px !important;
+    gap: 6px !important;
+  }
+
+  .emoji-btn,
+  .file-upload-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    border-radius: 10px !important;
+  }
+
+  .send-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    border-radius: 10px !important;
+  }
+
+  .chat-input-box input {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+  }
+
+  /* ADMIN DASHBOARD MOBILE COMPATIBILITY */
   .admin-layout {
-    flex-direction: column;
+    flex-direction: column !important;
   }
 
   .sidebar {
@@ -76,48 +198,72 @@ img, video, canvas, svg {
     min-width: 100% !important;
     height: auto !important;
     position: relative !important;
-    padding: 20px !important;
+    padding: 16px !important;
   }
 
   .admin-main {
-    padding: 20px 16px !important;
-  }
-
-  .admin-topbar {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .tools-grid {
-    grid-template-columns: 1fr;
+    padding: 16px 12px !important;
   }
 
   .stats-cards-grid {
     grid-template-columns: 1fr !important;
   }
 
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .users-table,
+  .tools-table {
+    min-width: 620px !important;
+  }
+
+  /* TOOL DETAILS MOBILE COMPATIBILITY */
+  .tool-details-wrapper {
+    padding: 16px 12px !important;
+  }
+
+  .product-hero-left {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .ratings-overview-grid {
     grid-template-columns: 1fr !important;
   }
+
+  .hero-action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .visit-action-btn,
+  .save-action-btn {
+    width: 100% !important;
+  }
 }
 
-/* 6. Small Screens (<= 480px) */
+/* 6. Small Screen Smartphones (<= 480px) */
 @media screen and (max-width: 480px) {
   .hero-title {
-    font-size: 1.8rem;
+    font-size: 1.75rem !important;
   }
 
   .search-container {
-    flex-direction: column;
+    flex-direction: column !important;
   }
 
   .search-btn {
-    width: 100%;
+    width: 100% !important;
   }
 
   .clay-button,
   .clay-pill {
     touch-action: manipulation;
+  }
+
+  .message-bubble {
+    max-width: 90% !important;
   }
 }
