@@ -142,17 +142,21 @@ export default function Chats() {
       return;
     }
 
-    // Fetch profiles ONLY for selected active chat partners
+    // Fetch profiles ONLY for active chat partners
     const { data: users } = await supabase
       .from('profiles')
       .select('*')
       .in('id', Array.from(partnerIds));
 
     const formatted = (users || [])
-      .filter(profile => !removedContacts[profile.id])
+      .filter(profile => {
+        const hasMessages = !!lastMessages[profile.id]?.text || !!lastMessages[profile.id]?.time;
+        const notRemoved = !removedContacts[profile.id];
+        return hasMessages && notRemoved;
+      })
       .map(profile => ({
         ...profile,
-        lastMessage: lastMessages[profile.id]?.text || "No messages yet",
+        lastMessage: lastMessages[profile.id]?.text || "",
         lastTime: lastMessages[profile.id]?.time || ""
       }))
       .sort((a, b) => {
@@ -277,7 +281,7 @@ export default function Chats() {
 
               {!loading && filteredProfiles.length === 0 && (
                 <div className="empty-chat">
-                  <p>No active conversations yet. Visit a community profile or click "Chat" on a tool review to start messaging!</p>
+                  <p>No active conversations yet. Click "Chat" on a profile or tool review to message someone!</p>
                 </div>
               )}
 
@@ -304,7 +308,7 @@ export default function Chats() {
 
                       <div className="chat-user-info">
                         <h3>{profile.username || profile.email?.split('@')[0] || "User"}</h3>
-                        <p>{profile.lastMessage.slice(0, 32)}</p>
+                        <p>{profile.lastMessage}</p>
                       </div>
                     </div>
 
