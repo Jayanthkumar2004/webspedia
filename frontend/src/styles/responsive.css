@@ -1,12 +1,15 @@
 /* =========================================================
-   UNIVERSAL MOBILE & MULTI-DEVICE COMPATIBILITY STYLES
+   UNIVERSAL MOBILE & MULTI-DEVICE CONTAINMENT STYLES
 ========================================================= */
 
-/* 1. Global Reset & Touch Optimization */
-html {
+/* 1. Global Reset & Strict Viewport Containment */
+html, body, #root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden !important;
   box-sizing: border-box;
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 *, *:before, *:after {
@@ -14,9 +17,6 @@ html {
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -32,10 +32,12 @@ img, video, canvas, svg {
 .main-content,
 .chats-main-wrapper,
 .tool-details-wrapper,
+.profile-container,
 .page-container {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* 3. Laptops & High-DPI Display Scaling (125% / 150%) */
@@ -50,6 +52,7 @@ img, video, canvas, svg {
   .hero-split-card {
     grid-template-columns: 1fr;
     gap: 24px;
+    padding: 32px 20px;
   }
   
   .hero-right-visual {
@@ -71,13 +74,20 @@ img, video, canvas, svg {
   .chat-welcome {
     display: none !important;
   }
+
+  .profile-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* 5. Smartphone Mobile Breakpoint (<= 768px) */
 @media screen and (max-width: 768px) {
   /* NAVBAR MOBILE COMPATIBILITY */
   .navbar {
-    padding: 10px 16px !important;
+    padding: 10px 14px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
   }
 
   .logo h2 {
@@ -93,69 +103,133 @@ img, video, canvas, svg {
     gap: 8px !important;
   }
 
+  .mobile-hamburger-btn {
+    display: flex !important;
+  }
+
   .nav-links {
-    gap: 4px !important;
-  }
-
-  .nav-item {
-    padding: 6px 10px !important;
-  }
-
-  .nav-item span {
     display: none !important;
   }
 
-  .nav-admin-btn span {
-    display: none !important;
+  .nav-links.mobile-open {
+    display: flex !important;
+    position: fixed !important;
+    top: 60px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: calc(100vh - 60px) !important;
+    background: var(--clay-surface) !important;
+    border-top: var(--clay-border-subtle) !important;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25) !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 24px 20px !important;
+    gap: 14px !important;
+    z-index: 9999 !important;
+    overflow-y: auto !important;
   }
 
+  .nav-item span,
+  .nav-admin-btn span,
   .logout-btn span {
-    display: none !important;
+    display: inline !important;
   }
 
+  .nav-item,
+  .nav-admin-btn,
   .logout-btn {
-    padding: 8px 10px !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    padding: 14px 18px !important;
+    font-size: 16px !important;
   }
 
-  /* CHATS LIST MOBILE COMPATIBILITY */
+  /* HOME PAGE MOBILE COMPATIBILITY */
+  .main-content {
+    padding: 16px 12px 40px !important;
+  }
+
+  .hero-split-card {
+    padding: 24px 16px !important;
+    border-radius: var(--radius-lg) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .hero-title {
+    font-size: 26px !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  .search-container {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .search-btn {
+    width: 100% !important;
+  }
+
+  .tools-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* PROFILE PAGE MOBILE COMPATIBILITY */
+  .profile-container {
+    padding: 16px 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .profile-sidebar,
+  .profile-main {
+    padding: 18px 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .email-box {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .email-box p {
+    word-break: break-all !important;
+  }
+
+  /* CHAT PAGES MOBILE COMPATIBILITY */
   .chats-main-wrapper {
-    padding: 12px !important;
+    padding: 12px 8px !important;
   }
 
   .chat-sidebar {
-    padding: 16px !important;
+    padding: 16px 12px !important;
   }
 
-  .chat-user-card {
-    padding: 12px !important;
-  }
-
-  /* INDIVIDUAL CHAT ROOM MOBILE COMPATIBILITY */
   .chat-page-main {
-    padding: 8px !important;
+    padding: 8px 4px !important;
   }
 
   .chat-wrapper {
-    height: calc(100vh - 75px) !important;
-    border-radius: 16px !important;
+    height: calc(100vh - 70px) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .chat-header {
-    padding: 12px 14px !important;
-  }
-
-  .chat-user-avatar {
-    width: 38px !important;
-    height: 38px !important;
-  }
-
-  .chat-user-text h2 {
-    font-size: 16px !important;
+    padding: 10px 14px !important;
   }
 
   .chat-body {
     padding: 14px 10px !important;
-    gap: 10px !important;
   }
 
   .message-bubble {
@@ -164,28 +238,20 @@ img, video, canvas, svg {
   }
 
   .chat-input-wrapper {
-    padding: 10px 12px !important;
+    padding: 10px 10px !important;
     gap: 6px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
-  .emoji-btn,
-  .file-upload-btn {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    border-radius: 10px !important;
-  }
-
-  .send-btn {
-    width: 40px !important;
-    height: 40px !important;
-    min-width: 40px !important;
-    border-radius: 10px !important;
+  .chat-input-box {
+    flex: 1 !important;
+    min-width: 0 !important;
   }
 
   .chat-input-box input {
-    padding: 10px 14px !important;
-    font-size: 14px !important;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
   }
 
   /* ADMIN DASHBOARD MOBILE COMPATIBILITY */
@@ -212,16 +278,17 @@ img, video, canvas, svg {
   .table-wrapper {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
+    width: 100% !important;
   }
 
   .users-table,
   .tools-table {
-    min-width: 620px !important;
+    min-width: 600px !important;
   }
 
   /* TOOL DETAILS MOBILE COMPATIBILITY */
   .tool-details-wrapper {
-    padding: 16px 12px !important;
+    padding: 16px 10px !important;
   }
 
   .product-hero-left {
@@ -247,15 +314,7 @@ img, video, canvas, svg {
 /* 6. Small Screen Smartphones (<= 480px) */
 @media screen and (max-width: 480px) {
   .hero-title {
-    font-size: 1.75rem !important;
-  }
-
-  .search-container {
-    flex-direction: column !important;
-  }
-
-  .search-btn {
-    width: 100% !important;
+    font-size: 1.7rem !important;
   }
 
   .clay-button,

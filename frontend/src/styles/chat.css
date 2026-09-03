@@ -6,6 +6,8 @@
   padding: 24px;
   max-width: 1100px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .chat-wrapper {
@@ -15,6 +17,8 @@
   position: relative;
   background: var(--clay-surface);
   border: var(--clay-border);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .chat-header {
@@ -22,6 +26,8 @@
   border-bottom: var(--clay-border-subtle);
   background: var(--clay-surface-raised);
   box-shadow: var(--shadow-dark-sm);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .chat-header-left {
@@ -36,6 +42,7 @@
   border-radius: 12px;
   padding: 0;
   color: var(--text-primary);
+  flex-shrink: 0;
 }
 
 .chat-user-info {
@@ -49,6 +56,7 @@
   height: 44px;
   border-radius: 50%;
   position: relative;
+  flex-shrink: 0;
 }
 
 .chat-user-avatar img {
@@ -126,10 +134,13 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .message-row {
   display: flex;
+  width: 100%;
 }
 
 .sent-row {
@@ -144,6 +155,7 @@
   max-width: 68%;
   padding: 12px 18px;
   border-radius: 20px;
+  box-sizing: border-box;
 }
 
 .message-bubble.sent {
@@ -251,6 +263,7 @@
   color: inherit;
   text-decoration: underline;
   font-weight: 700;
+  word-break: break-all;
 }
 
 .emoji-picker-container {
@@ -267,6 +280,9 @@
   padding: 16px 20px;
   border-top: var(--clay-border-subtle);
   background: var(--clay-surface-raised);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .emoji-btn,
@@ -280,10 +296,12 @@
   justify-content: center;
   cursor: pointer;
   color: var(--text-primary);
+  flex-shrink: 0;
 }
 
 .chat-input-box {
   flex: 1;
+  min-width: 0; /* Prevents input from overflowing flex parent */
 }
 
 .chat-input-box input {
@@ -291,6 +309,7 @@
   padding: 12px 18px;
   font-size: 14px;
   color: var(--text-primary) !important;
+  box-sizing: border-box;
 }
 
 .send-btn {
@@ -298,4 +317,63 @@
   height: 44px;
   border-radius: 14px;
   padding: 0;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .chat-page-main {
+    padding: 8px 4px !important;
+  }
+
+  .chat-wrapper {
+    height: calc(100vh - 70px) !important;
+  }
+
+  .chat-header {
+    padding: 10px 14px !important;
+  }
+
+  .chat-body {
+    padding: 14px 10px !important;
+  }
+
+  .message-bubble {
+    max-width: 86% !important;
+    padding: 10px 14px !important;
+  }
+
+  .chat-input-wrapper {
+    padding: 10px 10px !important;
+    gap: 6px !important;
+  }
+
+  .emoji-btn,
+  .file-upload-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 10px !important;
+  }
+
+  .send-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    border-radius: 10px !important;
+  }
+
+  .chat-input-box input {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+
+  .emoji-picker-container {
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+  }
+
+  .emoji-picker-container > div {
+    width: 100% !important;
+  }
 }
