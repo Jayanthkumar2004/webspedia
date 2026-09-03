@@ -5,7 +5,7 @@ import BannerSlider from '../components/BannerSlider';
 import FeedbackSection from '../components/FeedbackSection';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
-import { Search, ChevronLeft, ChevronRight, Sparkles, Cpu, Code, PenTool, Image as ImageIcon, Flame } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Sparkles, Cpu, Code, PenTool, Flame, Layers } from 'lucide-react';
 import '../styles/home.css';
 
 export default function Home() {
@@ -86,51 +86,52 @@ export default function Home() {
         {/* SPLIT HERO SECTION WITH 3D CLAY VISUAL */}
         <section className="hero-split-card clay-surface">
           <div className="hero-left-content">
-            <div className="hero-badge clay-badge">
-              <Sparkles size={14} />
-              <span>Modern AI Discovery Platform</span>
+            <div className="hero-badge clay-pill">
+              <Sparkles size={14} className="icon-sparkle" color="var(--accent-primary)" />
+              <span>Next-Gen AI Directory</span>
             </div>
 
             <h1 className="hero-title">
-              Discover the right <br />
-              <span className="gradient-text">AI tools</span> for your workflow.
+              Discover & Benchmark <br />
+              <span className="gradient-text">Top AI Tools</span>
             </h1>
 
             <p className="hero-subtitle">
-              Find, compare, and integrate top-rated AI tools for writing, coding, design, research, and automation.
+              Explore curated artificial intelligence software, read community reviews, bookmark your favorites, and boost your workflow.
             </p>
 
-            {/* SEARCH BAR */}
+            {/* PROFESSIONAL SEARCH CONTAINER */}
             <div className="search-container">
-              <div className="search-input-wrapper">
+              <div className="search-input-wrapper clay-inset">
                 <Search className="search-icon" size={18} />
                 <input
-                  className="clay-input search-input"
-                  placeholder="Search AI tools, categories..."
+                  type="text"
+                  className="search-input"
+                  placeholder="Search AI tools by name, category..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              <button className="clay-button clay-button-primary search-btn" type="button">
-                <span>Search</span>
+              <button className="search-btn clay-button-primary" type="button">
+                <span>Explore</span>
               </button>
             </div>
 
-            {/* POPULAR CATEGORIES TAGS */}
-            <div className="popular-tags-row">
-              <span className="popular-label">Popular:</span>
-              <button className="tag-pill clay-pill" onClick={() => setCategory('Writing')} type="button">
-                <PenTool size={12} />
-                <span>Writing</span>
-              </button>
-              <button className="tag-pill clay-pill" onClick={() => setCategory('Design')} type="button">
-                <ImageIcon size={12} />
-                <span>Design</span>
-              </button>
-              <button className="tag-pill clay-pill" onClick={() => setCategory('Coding')} type="button">
-                <Code size={12} />
-                <span>Coding</span>
-              </button>
+            {/* PROFESSIONAL METRIC STATS ROW */}
+            <div className="hero-stats-row">
+              <div className="stat-item-clay clay-surface">
+                <div className="stat-icon-clay">
+                  <Layers size={15} color="var(--accent-primary)" />
+                </div>
+                <span><strong>{tools.length}+</strong> Verified Tools</span>
+              </div>
+
+              <div className="stat-item-clay clay-surface">
+                <div className="stat-icon-clay">
+                  <Sparkles size={15} color="#10b981" />
+                </div>
+                <span><strong>Community</strong> Rated</span>
+              </div>
             </div>
           </div>
 
