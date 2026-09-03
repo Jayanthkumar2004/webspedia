@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
 import ToolCard from '../components/ToolCard';
 import BannerSlider from '../components/BannerSlider';
+import PromotedWebsites from '../components/PromotedWebsites';
 import FeedbackSection from '../components/FeedbackSection';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
@@ -229,6 +230,9 @@ export default function Home() {
             )}
           </div>
         </section>
+
+        {/* PROMOTED WEBSITES SECTION (EDITABLE VIA ADMIN CRUD) */}
+        <PromotedWebsites />
 
         {/* USER FEEDBACK SECTION */}
         <FeedbackSection />

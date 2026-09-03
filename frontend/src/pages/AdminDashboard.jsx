@@ -5,6 +5,7 @@ import ToolsTable from '../components/admin/ToolsTable';
 import ToolForm from '../components/admin/ToolForm';
 import BannersManager from '../components/admin/BannersManager';
 import FeedbackManager from '../components/admin/FeedbackManager';
+import WebsitesManager from '../components/admin/WebsitesManager';
 import Charts from '../components/admin/Charts';
 import StatsCards from '../components/admin/StatsCards';
 import DarkModeToggle from '../components/DarkModeToggle';
@@ -15,7 +16,8 @@ import {
   Activity,
   BarChart3,
   Wrench,
-  MessageSquareHeart
+  MessageSquareHeart,
+  Globe
 } from 'lucide-react';
 import '../styles/admin.css';
 
@@ -66,7 +68,7 @@ export default function AdminDashboard() {
             </ClayBadge>
             <h1 className="admin-title">{active} Workspace</h1>
             <p className="admin-subtitle">
-              Monitor platform metrics, manage published AI tools, promotional banners, inspect user feedback, and supervise accounts.
+              Monitor platform metrics, manage published AI tools, promotional banners, partner websites, user feedback, and supervise accounts.
             </p>
           </div>
 
@@ -88,7 +90,7 @@ export default function AdminDashboard() {
                   </ClayBadge>
                   <h2 style={{ fontSize: "26px", fontWeight: "900", margin: "0 0 8px 0" }}>System Overview & Control</h2>
                   <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0, maxWidth: "560px" }}>
-                    Manage tool catalog additions, update user permissions, inspect user feedback submissions, and manage ad banners.
+                    Manage tool catalog additions, update user permissions, inspect promoted website links, and manage ad banners.
                   </p>
                 </div>
                 <div className="hero-buttons">
@@ -96,9 +98,9 @@ export default function AdminDashboard() {
                     <Wrench size={16} />
                     <span>Manage Catalog</span>
                   </ClayButton>
-                  <ClayButton onClick={() => setActive("Feedback")}>
-                    <MessageSquareHeart size={16} />
-                    <span>User Feedback</span>
+                  <ClayButton onClick={() => setActive("Websites")}>
+                    <Globe size={16} />
+                    <span>Promoted Sites</span>
                   </ClayButton>
                 </div>
               </div>
@@ -173,6 +175,13 @@ export default function AdminDashboard() {
         {active === "Banners" && (
           <div className="banners-tab-view">
             <BannersManager />
+          </div>
+        )}
+
+        {/* WEBSITES TAB */}
+        {active === "Websites" && (
+          <div className="websites-tab-view">
+            <WebsitesManager />
           </div>
         )}
 
