@@ -9,7 +9,9 @@ import {
   Bookmark, 
   User, 
   ShieldCheck, 
-  LogOut 
+  LogOut,
+  Menu,
+  X
 } from 'lucide-react';
 import '../styles/navbar.css';
 
@@ -19,6 +21,7 @@ export default function Navbar() {
   const [role, setRole] = useState(null);
   const [avatar, setAvatar] = useState(null);
   const [loadingAvatar, setLoadingAvatar] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -57,6 +60,7 @@ export default function Navbar() {
   };
 
   const handleLogout = async () => {
+    setMobileMenuOpen(false);
     await supabase.auth.signOut();
     localStorage.removeItem('role');
     localStorage.removeItem('token');
@@ -74,7 +78,7 @@ export default function Navbar() {
   return (
     <nav className="navbar clay-nav">
       {/* LOGO */}
-      <div className="logo" onClick={() => navigate('/')}>
+      <div className="logo" onClick={() => { setMobileMenuOpen(false); navigate('/'); }}>
         <div className="logo-icon-clay">
           <Sparkles size={20} color="#ffffff" />
         </div>
@@ -83,24 +87,24 @@ export default function Navbar() {
 
       {/* RIGHT NAVIGATION */}
       <div className="nav-right">
-        <div className="nav-links">
-          <Link to="/" className="nav-item">
+        <div className={`nav-links ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+          <Link to="/" className="nav-item" onClick={() => setMobileMenuOpen(false)}>
             <Home size={16} />
             <span>Home</span>
           </Link>
 
-          <Link to="/chats" className="nav-item">
+          <Link to="/chats" className="nav-item" onClick={() => setMobileMenuOpen(false)}>
             <MessageSquare size={16} />
             <span>Chats</span>
           </Link>
 
-          <Link to="/saved-tools" className="nav-item">
+          <Link to="/saved-tools" className="nav-item" onClick={() => setMobileMenuOpen(false)}>
             <Bookmark size={16} />
             <span>Saved Tools</span>
           </Link>
 
           {role === 'ADMIN' && (
-            <Link to="/admin" className="nav-admin-btn">
+            <Link to="/admin" className="nav-admin-btn" onClick={() => setMobileMenuOpen(false)}>
               <ShieldCheck size={16} />
               <span>Admin Hub</span>
             </Link>
@@ -108,7 +112,7 @@ export default function Navbar() {
 
           {user ? (
             <>
-              <Link to="/profile" className="nav-item avatar-link">
+              <Link to="/profile" className="nav-item avatar-link" onClick={() => setMobileMenuOpen(false)}>
                 {avatar ? (
                   <img src={avatar} alt="avatar" className="navbar-avatar" />
                 ) : (
@@ -125,7 +129,7 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            <Link to="/login" className="nav-item">
+            <Link to="/login" className="nav-item" onClick={() => setMobileMenuOpen(false)}>
               <User size={16} />
               <span>Login</span>
             </Link>
@@ -134,6 +138,16 @@ export default function Navbar() {
 
         {/* DARK/LIGHT THEME TOGGLE */}
         <DarkModeToggle />
+
+        {/* MOBILE HAMBURGER TOGGLE BUTTON */}
+        <button 
+          className="mobile-hamburger-btn clay-btn"
+          onClick={() => setMobileMenuOpen(prev => !prev)}
+          type="button"
+          aria-label="Toggle Navigation Menu"
+        >
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
     </nav>
   );
