@@ -9,7 +9,6 @@ import {
   Camera, 
   Mail, 
   Calendar, 
-  ShieldCheck, 
   Lock, 
   Bookmark, 
   Check, 
@@ -141,7 +140,7 @@ export default function Profile() {
     return (
       <div className="page-container">
         <Navbar />
-        <ClayCard style={{ margin: "40px auto", maxWidth: "600px", padding: "40px", textAlign: "center" }}>
+        <ClayCard className="profile-loading-card">
           <p>Loading profile details...</p>
         </ClayCard>
       </div>
@@ -152,16 +151,16 @@ export default function Profile() {
     <div className="page-container">
       <Navbar />
 
-      <main className="main-content" style={{ paddingTop: "32px" }}>
-        <ClayCard elevated style={{ padding: "32px", marginBottom: "32px" }}>
+      <main className="main-content profile-page-main">
+        <ClayCard elevated className="profile-outer-card">
           {/* HEADER */}
-          <div className="profile-header" style={{ marginBottom: "28px" }}>
+          <div className="profile-header">
             <div className="profile-header-icon-clay">
               <User size={24} color="#ffffff" />
             </div>
             <div>
-              <h1 style={{ fontSize: "28px", fontWeight: "900", margin: 0 }}>Account Workspace</h1>
-              <p style={{ color: "var(--text-muted)", fontSize: "14px", margin: "2px 0 0 0" }}>Manage your profile information and saved tools</p>
+              <h1 className="profile-title">Account Workspace</h1>
+              <p className="profile-sub">Manage your profile information and saved tools</p>
             </div>
           </div>
 
@@ -177,35 +176,35 @@ export default function Profile() {
                 </label>
               </div>
 
-              <div className="profile-name" style={{ textAlign: "center", marginTop: "14px" }}>
-                <h2 style={{ fontSize: "20px", fontWeight: "800", margin: "0 0 6px 0" }}>{username || "User"}</h2>
+              <div className="profile-name">
+                <h2>{username || "User"}</h2>
                 <ClayBadge style={{ background: "var(--color-success-bg)", color: "var(--color-success)" }}>
                   <span>Verified User</span>
                 </ClayBadge>
               </div>
 
-              <div className="profile-details" style={{ marginTop: "20px" }}>
-                <ClayCard recessed style={{ padding: "14px", marginBottom: "10px", display: "flex", alignItems: "center", gap: "12px" }}>
-                  <Mail size={18} color="var(--accent-primary)" />
-                  <div>
-                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Email</span>
-                    <p style={{ fontSize: "13px", fontWeight: "700", margin: 0 }}>{user?.email}</p>
+              <div className="profile-details">
+                <ClayCard recessed className="profile-detail-card">
+                  <Mail size={18} color="var(--accent-primary)" className="detail-icon-svg" />
+                  <div className="detail-text-box">
+                    <span className="detail-label">Email</span>
+                    <p className="detail-val">{user?.email}</p>
                   </div>
                 </ClayCard>
 
-                <ClayCard recessed style={{ padding: "14px", marginBottom: "10px", display: "flex", alignItems: "center", gap: "12px" }}>
-                  <User size={18} color="var(--accent-primary)" />
-                  <div>
-                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Username</span>
-                    <p style={{ fontSize: "13px", fontWeight: "700", margin: 0 }}>{username || "No username"}</p>
+                <ClayCard recessed className="profile-detail-card">
+                  <User size={18} color="var(--accent-primary)" className="detail-icon-svg" />
+                  <div className="detail-text-box">
+                    <span className="detail-label">Username</span>
+                    <p className="detail-val">{username || "No username"}</p>
                   </div>
                 </ClayCard>
 
-                <ClayCard recessed style={{ padding: "14px", display: "flex", alignItems: "center", gap: "12px" }}>
-                  <Calendar size={18} color="var(--accent-primary)" />
-                  <div>
-                    <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Member Since</span>
-                    <p style={{ fontSize: "13px", fontWeight: "700", margin: 0 }}>
+                <ClayCard recessed className="profile-detail-card">
+                  <Calendar size={18} color="var(--accent-primary)" className="detail-icon-svg" />
+                  <div className="detail-text-box">
+                    <span className="detail-label">Member Since</span>
+                    <p className="detail-val">
                       {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "2026"}
                     </p>
                   </div>
@@ -216,7 +215,7 @@ export default function Profile() {
             {/* RIGHT MAIN FORM */}
             <div className="profile-main">
               <div className="section-block">
-                <h3 style={{ fontSize: "16px", fontWeight: "800" }}>Upload Avatar</h3>
+                <h3>Upload Avatar</h3>
                 <p className="section-subtitle">Upload a new picture to update your avatar</p>
                 <div className="file-input-wrapper">
                   <input type="file" className="clay-input profile-file" onChange={handleImageUpload} />
@@ -224,10 +223,10 @@ export default function Profile() {
               </div>
 
               <div className="section-block">
-                <h3 style={{ fontSize: "16px", fontWeight: "800" }}>Email Address</h3>
+                <h3>Email Address</h3>
                 <p className="section-subtitle">Your registered account email</p>
-                <ClayCard recessed style={{ padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <p style={{ margin: 0, fontWeight: "700" }}>{user?.email}</p>
+                <ClayCard recessed className="email-box">
+                  <p className="user-email-text">{user?.email}</p>
                   <ClayBadge>
                     <Check size={12} />
                     <span>Verified</span>
@@ -236,7 +235,7 @@ export default function Profile() {
               </div>
 
               <div className="section-block">
-                <h3 style={{ fontSize: "16px", fontWeight: "800" }}>Display Name</h3>
+                <h3>Display Name</h3>
                 <p className="section-subtitle">Choose how your name appears to others</p>
                 <ClayInput
                   value={username}
@@ -245,22 +244,22 @@ export default function Profile() {
                 />
               </div>
 
-              <ClayButton variant="primary" onClick={updateProfile} style={{ width: "100%", marginTop: "10px" }}>
+              <ClayButton variant="primary" onClick={updateProfile} className="update-profile-btn">
                 <span>Save Profile Changes</span>
               </ClayButton>
 
-              <p className="secure-text" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", fontSize: "12px", color: "var(--text-muted)", marginTop: "12px" }}>
-                <Lock size={13} /> Your data is secure and encrypted
+              <p className="secure-text">
+                <Lock size={13} /> <span>Your data is secure and encrypted</span>
               </p>
             </div>
           </div>
 
           {/* SAVED TOOLS PREVIEW */}
-          <ClayCard recessed style={{ padding: "24px", marginTop: "32px" }}>
-            <div className="saved-tools-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <div className="title-group" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <ClayCard recessed className="saved-tools-box">
+            <div className="saved-tools-header">
+              <div className="title-group">
                 <Bookmark size={18} color="var(--accent-primary)" />
-                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "800" }}>Saved Tools ({savedTools.length})</h3>
+                <h3>Saved Tools ({savedTools.length})</h3>
               </div>
               <ClayButton size="sm" onClick={() => navigate("/saved-tools")}>
                 <span>View Library</span>
@@ -269,23 +268,22 @@ export default function Profile() {
             </div>
 
             {savedTools.length === 0 ? (
-              <p className="empty-text" style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0 }}>Your bookmarked tools will appear here for quick access.</p>
+              <p className="empty-text">Your bookmarked tools will appear here for quick access.</p>
             ) : (
               <div className="saved-tools-grid">
                 {savedTools.slice(0, 3).map((tool) => (
                   <ClayCard
                     key={tool.id}
                     className="saved-mini-card"
-                    style={{ padding: "14px", display: "flex", gap: "12px", cursor: "pointer" }}
                     onClick={() => navigate(`/tool/${tool.id}`)}
                   >
                     <img
                       src={tool.image_url || "https://via.placeholder.com/80"}
                       alt={tool.title}
-                      style={{ width: "48px", height: "48px", borderRadius: "var(--radius-sm)", objectFit: "cover" }}
+                      className="saved-mini-img"
                     />
                     <div>
-                      <h4 style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: "800" }}>{tool.title}</h4>
+                      <h4>{tool.title}</h4>
                       <ClayBadge>{tool.category || "AI Tool"}</ClayBadge>
                     </div>
                   </ClayCard>
