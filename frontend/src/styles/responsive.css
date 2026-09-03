@@ -1,0 +1,123 @@
+/* =========================================================
+   UNIVERSAL SYSTEM & DEVICE COMPATIBILITY STYLES
+========================================================= */
+
+/* 1. Global Scaling Reset & Box Sizing */
+html {
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fluid Media Compatibility */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 2. Container Max Width Bounds for High Resolution Monitors */
+.main-content,
+.chats-main-wrapper,
+.tool-details-wrapper,
+.page-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* 3. System Scaling & High-DPI Screens (125% / 150% Windows Scaling) */
+@media screen and (max-resolution: 120dpi), screen and (max-width: 1440px) {
+  .hero-title {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+  }
+}
+
+/* 4. Tablets & Medium Displays (<= 1024px) */
+@media screen and (max-width: 1024px) {
+  .hero-split-card {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  
+  .hero-right-visual {
+    display: none;
+  }
+
+  .banner-slide-content {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tools-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+/* 5. Small Tablets & Mobile Devices (<= 768px) */
+@media screen and (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    padding: 20px !important;
+  }
+
+  .admin-main {
+    padding: 20px 16px !important;
+  }
+
+  .admin-topbar {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ratings-overview-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 6. Small Screens (<= 480px) */
+@media screen and (max-width: 480px) {
+  .hero-title {
+    font-size: 1.8rem;
+  }
+
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-btn {
+    width: 100%;
+  }
+
+  .clay-button,
+  .clay-pill {
+    touch-action: manipulation;
+  }
+}

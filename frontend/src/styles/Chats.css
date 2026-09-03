@@ -1,5 +1,5 @@
 /* =========================================================
-   CHATS PAGE (CLAYMORPHISM 3D)
+   CHATS PAGE (THEME-AWARE CLAYMORPHISM 3D)
 ========================================================= */
 
 .chats-main-wrapper {
@@ -20,6 +20,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: var(--clay-surface);
+  border: var(--clay-border);
 }
 
 .sidebar-title-row {
@@ -30,12 +32,12 @@
 }
 
 .sidebar-title-row .icon {
-  color: var(--accent-purple);
+  color: var(--accent-primary);
 }
 
 .sidebar-title-row h2 {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--text-primary);
   margin: 0;
 }
@@ -71,8 +73,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px;
+  padding: 14px 16px;
   cursor: pointer;
+  background: var(--clay-surface-raised);
+  border: var(--clay-border-subtle);
+  transition: var(--transition-clay);
+}
+
+.chat-user-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-dark-sm), var(--shadow-light-sm);
 }
 
 .chat-user-left {
@@ -96,37 +106,42 @@
 }
 
 .chat-avatar-fallback {
-  background: var(--accent-purple-gradient);
+  background: var(--accent-gradient);
   color: #ffffff;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
 }
 
 .online-indicator {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
-  width: 10px;
-  height: 10px;
+  right: 1px;
+  bottom: 1px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: #10b981;
-  border: 2px solid var(--clay-card-bg);
+  background: #64748b;
+  border: 2px solid var(--clay-surface);
+}
+
+.online-indicator.active {
+  background: var(--color-success);
 }
 
 .chat-user-info h3 {
   font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-weight: 800;
+  color: var(--text-primary) !important;
   margin: 0 0 4px;
 }
 
 .chat-user-info p {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-secondary) !important;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -138,12 +153,13 @@
 }
 
 .chat-time {
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: 12px;
+  color: var(--text-secondary) !important;
+  font-weight: 700;
 }
 
 .chat-arrow {
-  color: var(--accent-purple);
+  color: var(--accent-primary);
 }
 
 .chat-welcome {
@@ -152,6 +168,8 @@
   justify-content: center;
   padding: 40px;
   text-align: center;
+  background: var(--clay-surface);
+  border: var(--clay-border);
 }
 
 .chat-welcome-box {
@@ -162,17 +180,17 @@
   width: 72px;
   height: 72px;
   border-radius: 24px;
-  background: var(--accent-purple-gradient);
+  background: var(--accent-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
 }
 
 .chat-welcome-box h1 {
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 30px;
+  font-weight: 900;
   color: var(--text-primary);
   margin-bottom: 12px;
 }
@@ -186,8 +204,9 @@
 .empty-chat {
   padding: 40px 16px;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 14px;
+  font-weight: 600;
 }
 
 @media (max-width: 900px) {

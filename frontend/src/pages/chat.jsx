@@ -28,14 +28,26 @@ export default function Chat() {
 
   const bottomRef = useRef();
 
+  const getSafeUser = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      return sessionData?.session?.user || null;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     let messageChannel;
     let presenceChannel;
 
     const init = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data?.user) return;
-      setUser(data.user);
+      const activeUser = await getSafeUser();
+      if (!activeUser) {
+        navigate('/login');
+        return;
+      }
+      setUser(activeUser);
 
       const { data: receiverData } = await supabase
         .from("profiles")
@@ -44,8 +56,8 @@ export default function Chat() {
         .single();
 
       setReceiver(receiverData);
-      await fetchMessages(data.user.id);
-      await markMessagesAsRead(data.user.id, userId);
+      await fetchMessages(activeUser.id);
+      await markMessagesAsRead(activeUser.id, userId);
 
       // 1. REALTIME MESSAGES & READ STATUS CHANNEL WITH UNIQUE ID
       const msgChannelName = `chat-msg-${userId}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -64,15 +76,15 @@ export default function Chat() {
             if (!msg) return;
 
             const valid =
-              (msg.sender_id === data.user.id && msg.receiver_id === userId) ||
-              (msg.sender_id === userId && msg.receiver_id === data.user.id);
+              (msg.sender_id === activeUser.id && msg.receiver_id === userId) ||
+              (msg.sender_id === userId && msg.receiver_id === activeUser.id);
 
             if (!valid) return;
 
-            await fetchMessages(data.user.id);
+            await fetchMessages(activeUser.id);
 
             if (msg.sender_id === userId) {
-              await markMessagesAsRead(data.user.id, userId);
+              await markMessagesAsRead(activeUser.id, userId);
             }
           }
         )
@@ -83,7 +95,7 @@ export default function Chat() {
       presenceChannel = supabase.channel(presenceChannelName, {
         config: {
           presence: {
-            key: data.user.id,
+            key: activeUser.id,
           },
         },
       });
@@ -103,7 +115,7 @@ export default function Chat() {
           if (status === 'SUBSCRIBED') {
             try {
               await presenceChannel.track({
-                user_id: data.user.id,
+                user_id: activeUser.id,
                 online_at: new Date().toISOString(),
               });
             } catch (e) {
@@ -126,19 +138,25 @@ export default function Chat() {
   }, [messages]);
 
   const fetchMessages = async (currentUserId) => {
-    const { data, error } = await supabase
+    // 1. Fetch messages sent by current user to recipient
+    const { data: sentData } = await supabase
       .from("messages")
       .select("*")
-      .or(
-        `and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`
-      )
-      .order("created_at", { ascending: true });
+      .eq("sender_id", currentUserId)
+      .eq("receiver_id", userId);
 
-    if (error) {
-      console.log(error);
-      return;
-    }
-    setMessages(data || []);
+    // 2. Fetch messages sent by recipient to current user
+    const { data: receivedData } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("sender_id", userId)
+      .eq("receiver_id", currentUserId);
+
+    const combined = [...(sentData || []), ...(receivedData || [])].sort(
+      (a, b) => new Date(a.created_at) - new Date(b.created_at)
+    );
+
+    setMessages(combined);
   };
 
   const markMessagesAsRead = async (currentUserId, otherUserId) => {
@@ -247,39 +265,45 @@ export default function Chat() {
 
           {/* CHAT MESSAGES BODY */}
           <div className="chat-body">
-            {messages.map((msg) => {
-              const isSent = msg.sender_id === user?.id;
-              const isRead = !!msg.is_read;
+            {messages.length === 0 ? (
+              <div className="empty-chat-room" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+                <p>No message history with {receiver?.username || "this user"} yet. Type a message below to start chatting!</p>
+              </div>
+            ) : (
+              messages.map((msg) => {
+                const isSent = msg.sender_id === user?.id;
+                const isRead = !!msg.is_read;
 
-              return (
-                <div
-                  key={msg.id}
-                  className={`message-row ${isSent ? 'sent-row' : 'received-row'}`}
-                >
-                  <div className={`message-bubble ${isSent ? 'sent' : 'received'}`}>
-                    {msg.file_url && (
-                      <a href={msg.file_url} target="_blank" rel="noreferrer" className="file-link">
-                        <FileText size={16} />
-                        <span>{msg.content || "Attached File"}</span>
-                      </a>
-                    )}
-
-                    {!msg.file_url && <p className="message-text">{msg.content}</p>}
-
-                    <div className="message-meta" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>{formatTime(msg.created_at)}</span>
-                      {isSent && (
-                        isRead ? (
-                          <CheckCheck size={14} className="seen-icon read" color="#6366f1" title="Seen (Double Tick)" />
-                        ) : (
-                          <Check size={14} className="seen-icon unread" color="var(--text-muted)" title="Sent (Single Tick)" />
-                        )
+                return (
+                  <div
+                    key={msg.id}
+                    className={`message-row ${isSent ? 'sent-row' : 'received-row'}`}
+                  >
+                    <div className={`message-bubble ${isSent ? 'sent' : 'received'}`}>
+                      {msg.file_url && (
+                        <a href={msg.file_url} target="_blank" rel="noreferrer" className="file-link">
+                          <FileText size={16} />
+                          <span>{msg.content || "Attached File"}</span>
+                        </a>
                       )}
+
+                      {!msg.file_url && <p className="message-text">{msg.content}</p>}
+
+                      <div className="message-meta" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span>{formatTime(msg.created_at)}</span>
+                        {isSent && (
+                          isRead ? (
+                            <CheckCheck size={14} className="seen-icon read" color="#6366f1" title="Seen (Double Tick)" />
+                          ) : (
+                            <Check size={14} className="seen-icon unread" color="var(--text-muted)" title="Sent (Single Tick)" />
+                          )
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
             <div ref={bottomRef} />
           </div>
 

@@ -410,7 +410,14 @@ export default function ToolDetails() {
             {mainComments.map(c => (
               <div key={c.id} className="review-card clay-surface">
                 <div className="review-card-header">
-                  <div className="reviewer-info" onClick={() => navigate(`/chat/${c.user_id}`)}>
+                  <div className="reviewer-info" onClick={() => {
+                    if (!user) {
+                      alert("Please login first to chat with members");
+                      navigate('/login');
+                      return;
+                    }
+                    navigate(`/chat/${c.user_id}`);
+                  }}>
                     {c.avatar_url ? (
                       <img src={c.avatar_url} alt="" className="clay-avatar" />
                     ) : (
@@ -456,7 +463,14 @@ export default function ToolDetails() {
                   {user?.id !== c.user_id && (
                     <button
                       className="clay-pill action-pill"
-                      onClick={() => navigate(`/chat/${c.user_id}`)}
+                      onClick={() => {
+                        if (!user) {
+                          alert("Please login first to chat with members");
+                          navigate('/login');
+                          return;
+                        }
+                        navigate(`/chat/${c.user_id}`);
+                      }}
                       type="button"
                     >
                       <MessageSquare size={13} />

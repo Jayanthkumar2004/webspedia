@@ -4,6 +4,7 @@ import App from './App';
 import { ThemeProvider } from './context/ThemeContext';
 import './index.css';
 import './App.css';
+import './styles/responsive.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

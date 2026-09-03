@@ -14,16 +14,29 @@ export default function Chats() {
   const [loading, setLoading] = useState(true);
   const [onlineUsers, setOnlineUsers] = useState({});
 
+  const getSafeUser = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      return sessionData?.session?.user || null;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     let channel;
     let presenceChannel;
 
     const init = async () => {
-      await loadUsers();
+      const user = await getSafeUser();
+      setCurrentUser(user);
 
-      const { data } = await supabase.auth.getUser();
-      const user = data?.user;
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      await loadUsers(user);
 
       const channelName = `all-chats-${user.id}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
       channel = supabase
@@ -35,7 +48,7 @@ export default function Chats() {
             schema: 'public',
             table: 'messages'
           },
-          () => loadUsers()
+          () => loadUsers(user)
         )
         .subscribe();
 
@@ -85,57 +98,30 @@ export default function Chats() {
     };
   }, []);
 
-  const loadUsers = async () => {
-    setLoading(true);
-    const { data } = await supabase.auth.getUser();
-    const user = data?.user;
-
-    setCurrentUser(user);
+  const loadUsers = async (activeUser) => {
+    const user = activeUser || (await getSafeUser());
     if (!user) {
       setLoading(false);
       return;
     }
 
-    const { data: messages, error } = await supabase
+    setLoading(true);
+
+    // Fetch all user messages involving current user
+    const { data: messages } = await supabase
       .from('messages')
-      .select(`
-        id,
-        sender_id,
-        receiver_id,
-        content,
-        file_url,
-        created_at
-      `)
+      .select('*')
       .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.log(error);
-      setLoading(false);
-      return;
-    }
-
-    const userIds = [
-      ...new Set(
-        messages
-          ?.flatMap(msg => [msg.sender_id, msg.receiver_id])
-          .filter(id => id !== user.id)
-      )
-    ];
-
-    if (userIds.length === 0) {
-      setProfiles([]);
-      setLoading(false);
-      return;
-    }
-
+    // Fetch all profiles except current user
     const { data: users } = await supabase
       .from('profiles')
       .select('*')
-      .in('id', userIds);
+      .neq('id', user.id);
 
     const lastMessages = {};
-    messages.forEach(msg => {
+    (messages || []).forEach(msg => {
       const otherUserId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
       if (!lastMessages[otherUserId]) {
         lastMessages[otherUserId] = {
@@ -145,18 +131,24 @@ export default function Chats() {
       }
     });
 
-    const formatted = users?.map(profile => ({
+    const formatted = (users || []).map(profile => ({
       ...profile,
-      lastMessage: lastMessages[profile.id]?.text || "",
+      lastMessage: lastMessages[profile.id]?.text || "No messages yet. Click to chat!",
       lastTime: lastMessages[profile.id]?.time || ""
-    }))?.sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
+    })).sort((a, b) => {
+      if (a.lastTime && b.lastTime) {
+        return new Date(b.lastTime) - new Date(a.lastTime);
+      }
+      return a.lastTime ? -1 : 1;
+    });
 
-    setProfiles(formatted || []);
+    setProfiles(formatted);
     setLoading(false);
   };
 
   const filteredProfiles = profiles.filter(profile =>
-    profile.username?.toLowerCase().includes(search.toLowerCase())
+    profile.username?.toLowerCase().includes(search.toLowerCase()) ||
+    profile.email?.toLowerCase().includes(search.toLowerCase())
   );
 
   const formatTime = (time) => {
@@ -182,7 +174,7 @@ export default function Chats() {
             <div className="chat-sidebar-top">
               <div className="sidebar-title-row">
                 <MessageSquare size={22} className="icon" />
-                <h2>Messages</h2>
+                <h2>Messages ({profiles.length})</h2>
               </div>
 
               <div className="search-input-wrapper">
@@ -190,7 +182,7 @@ export default function Chats() {
                 <input
                   type="text"
                   className="clay-input"
-                  placeholder="Search conversations..."
+                  placeholder="Search members..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -206,7 +198,7 @@ export default function Chats() {
 
               {!loading && filteredProfiles.length === 0 && (
                 <div className="empty-chat">
-                  <p>No messages yet. Visit a user's review on a tool page to start chatting!</p>
+                  <p>No user profiles found in database.</p>
                 </div>
               )}
 
@@ -225,15 +217,15 @@ export default function Chats() {
                           <img src={profile.avatar_url} alt="avatar" className="chat-avatar" />
                         ) : (
                           <div className="chat-avatar-fallback">
-                            {getInitial(profile.username)}
+                            {getInitial(profile.username || profile.email)}
                           </div>
                         )}
                         <span className={`online-indicator ${isOnline ? 'active' : 'offline'}`}></span>
                       </div>
 
                       <div className="chat-user-info">
-                        <h3>{profile.username || "User"}</h3>
-                        <p>{profile.lastMessage ? profile.lastMessage.slice(0, 30) + "..." : "Start chatting..."}</p>
+                        <h3>{profile.username || profile.email?.split('@')[0] || "User"}</h3>
+                        <p>{profile.lastMessage.slice(0, 32)}</p>
                       </div>
                     </div>
 
@@ -254,7 +246,7 @@ export default function Chats() {
                 <Sparkles size={36} color="#ffffff" />
               </div>
               <h1>Your Direct Messages</h1>
-              <p>Select a user from the conversations list to chat in real-time about tools, tips, and recommendations.</p>
+              <p>Select any community member from the left sidebar to start chatting in real-time about AI tools, recommendations, and reviews.</p>
             </div>
           </div>
         </div>
