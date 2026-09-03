@@ -1,0 +1,75 @@
+/* =========================================================
+   FOOTER (CLAYMORPHISM & THEME VARIABLES)
+========================================================= */
+
+.footer {
+  margin-top: 60px;
+  background: var(--bg-navbar);
+  border-top: var(--clay-border-subtle);
+  padding: 48px 30px 24px;
+  color: var(--text-primary);
+  transition: background-color 0.3s ease;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 36px;
+}
+
+.footer-brand h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.footer-brand p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.footer-links h4,
+.footer-social h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+
+.footer-links,
+.footer-social {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  transition: color 0.25s ease;
+}
+
+.footer a:hover {
+  color: var(--accent-purple);
+}
+
+.footer-social p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: var(--clay-border-subtle);
+  color: var(--text-muted);
+  font-size: 13px;
+}

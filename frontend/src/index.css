@@ -1,0 +1,607 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ==========================================================================
+   WEBSPEDIA MASTER CLAYMORPHISM DESIGN SYSTEM & PHYSICS ENGINE
+   ==========================================================================
+   Version: 3.0.0 (Enterprise SaaS Edition)
+   Author: Webspedia Core Design Team
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CORE DESIGN TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Typography Scale */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --font-size-2xs: 0.6875rem; /* 11px */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-md: 1rem;        /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+  --font-size-4xl: 2.25rem;    /* 36px */
+  --font-size-5xl: 3rem;       /* 48px */
+  --font-size-6xl: 3.75rem;    /* 60px */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  /* Universal Brand Accents */
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #4f46e5;
+  --accent-primary-light: rgba(99, 102, 241, 0.15);
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%);
+  --accent-gradient-subtle: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-success-bg: rgba(16, 185, 129, 0.12);
+  --color-warning: #f59e0b;
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-danger: #ef4444;
+  --color-danger-bg: rgba(239, 68, 68, 0.12);
+  --color-info: #3b82f6;
+  --color-info-bg: rgba(59, 130, 246, 0.12);
+
+  /* Geometry & Radii */
+  --radius-2xs: 6px;
+  --radius-xs: 10px;
+  --radius-sm: 14px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 36px;
+  --radius-2xl: 44px;
+  --radius-pill: 9999px;
+
+  /* Spacing System */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Transitions & Micro-Interactions */
+  --ease-clay: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --transition-fast: all 0.15s var(--ease-smooth);
+  --transition-normal: all 0.25s var(--ease-clay);
+  --transition-slow: all 0.4s var(--ease-smooth);
+
+  /* Z-Index Layers */
+  --z-negative: -1;
+  --z-base: 0;
+  --z-above: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-tooltip: 600;
+}
+
+/* --------------------------------------------------------------------------
+   2. LIGHT THEME (PORCELAIN CLAY CANVAS)
+   -------------------------------------------------------------------------- */
+body, body.light {
+  --bg-main: #e6eaf0;
+  --bg-canvas: #e0e5ec;
+  --bg-hero: radial-gradient(circle at 50% 15%, #dce3ee 0%, #e6eaf0 100%);
+  --bg-navbar: rgba(230, 234, 240, 0.92);
+
+  /* Surface Elevation Levels */
+  --clay-surface-recessed: #d8dee8;
+  --clay-surface: #e0e5ec;
+  --clay-surface-raised: #e6ebf2;
+  --clay-surface-floating: #f0f4f9;
+
+  /* Dual Ambient Shadow Physics */
+  --shadow-light-sm: -4px -4px 10px #ffffff;
+  --shadow-dark-sm: 4px 4px 10px #a3b1c6;
+  --shadow-light: -10px -10px 22px #ffffff;
+  --shadow-dark: 10px 10px 22px #a3b1c6;
+  --shadow-light-lg: -16px -16px 32px #ffffff;
+  --shadow-dark-lg: 16px 16px 32px #a3b1c6;
+
+  /* Inset Depressions */
+  --inset-light-sm: inset -2px -2px 5px #ffffff;
+  --inset-dark-sm: inset 2px 2px 5px #a3b1c6;
+  --inset-light: inset -4px -4px 9px #ffffff;
+  --inset-dark: inset 4px 4px 9px #a3b1c6;
+
+  /* Borders & Highlights */
+  --clay-border: 1px solid rgba(255, 255, 255, 0.85);
+  --clay-border-subtle: 1px solid rgba(163, 177, 198, 0.35);
+  --clay-border-accent: 1px solid rgba(99, 102, 241, 0.4);
+
+  /* Typography Colors */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-disabled: #94a3b8;
+  --text-on-accent: #ffffff;
+
+  /* Inputs & Controls */
+  --input-bg: #d8dee8;
+  --input-border: 1px solid rgba(163, 177, 198, 0.45);
+  --input-shadow: inset 3px 3px 7px #a3b1c6, inset -3px -3px 7px #ffffff;
+
+  /* Badges & Pills */
+  --badge-bg: #dbe4f0;
+  --badge-text: #4338ca;
+
+  color-scheme: light;
+}
+
+/* --------------------------------------------------------------------------
+   3. BLACK THEME (OBSIDIAN PITCH DARK CLAY CANVAS)
+   -------------------------------------------------------------------------- */
+body.dark {
+  --bg-main: #090a0f;
+  --bg-canvas: #0d0f17;
+  --bg-hero: radial-gradient(circle at 50% 15%, #151824 0%, #090a0f 100%);
+  --bg-navbar: rgba(9, 10, 15, 0.94);
+
+  /* Surface Elevation Levels */
+  --clay-surface-recessed: #0c0e16;
+  --clay-surface: #121520;
+  --clay-surface-raised: #181c2b;
+  --clay-surface-floating: #202538;
+
+  /* Dual Ambient Shadow Physics */
+  --shadow-light-sm: -4px -4px 10px rgba(255, 255, 255, 0.03);
+  --shadow-dark-sm: 6px 6px 12px #040508;
+  --shadow-light: -8px -8px 22px rgba(255, 255, 255, 0.04);
+  --shadow-dark: 12px 12px 24px #040508;
+  --shadow-light-lg: -12px -12px 32px rgba(255, 255, 255, 0.05);
+  --shadow-dark-lg: 18px 18px 36px #030406;
+
+  /* Inset Depressions */
+  --inset-light-sm: inset -2px -2px 4px rgba(255, 255, 255, 0.04);
+  --inset-dark-sm: inset 2px 2px 4px #040508;
+  --inset-light: inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+  --inset-dark: inset 4px 4px 8px #040508;
+
+  /* Borders & Highlights */
+  --clay-border: 1px solid rgba(255, 255, 255, 0.08);
+  --clay-border-subtle: 1px solid rgba(255, 255, 255, 0.05);
+  --clay-border-accent: 1px solid rgba(99, 102, 241, 0.4);
+
+  /* Typography Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+  --text-on-accent: #ffffff;
+
+  /* Inputs & Controls */
+  --input-bg: #0c0e16;
+  --input-border: 1px solid rgba(255, 255, 255, 0.08);
+  --input-shadow: inset 4px 4px 8px #040508, inset -4px -4px 8px rgba(255, 255, 255, 0.04);
+
+  /* Badges & Pills */
+  --badge-bg: rgba(99, 102, 241, 0.2);
+  --badge-text: #a5b4fc;
+
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   4. GLOBAL RESET & BASE STYLES
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Universal Media Defaults */
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   5. UNIVERSAL HTML CONTROLS CLAY RESET
+   -------------------------------------------------------------------------- */
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  border: var(--clay-border);
+  background: var(--clay-surface);
+  box-shadow: var(--shadow-dark-sm), var(--shadow-light-sm);
+  font-weight: var(--font-weight-bold);
+  padding: 10px 20px;
+  transition: var(--transition-normal);
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-dark), var(--shadow-light);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--inset-dark-sm), var(--inset-light-sm);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Universal Inputs & Textareas */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="url"],
+select,
+textarea {
+  background: var(--input-bg);
+  box-shadow: var(--input-shadow);
+  border: var(--input-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 12px 18px;
+  font-size: var(--font-size-sm);
+  transition: var(--transition-normal);
+  width: 100%;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: var(--input-shadow), 0 0 0 3px var(--accent-primary-light);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Universal Select Custom Styling */
+select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+/* Universal Table Reset */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th {
+  background: var(--clay-surface-recessed);
+  color: var(--text-secondary);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-extrabold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: var(--clay-border);
+}
+
+td {
+  padding: 16px 18px;
+  border-bottom: var(--clay-border-subtle);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  vertical-align: middle;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* --------------------------------------------------------------------------
+   6. REUSABLE CLAY UTILITY PRIMITIVES
+   -------------------------------------------------------------------------- */
+.clay-surface {
+  background: var(--clay-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-dark), var(--shadow-light);
+  border: var(--clay-border);
+  transition: var(--transition-normal);
+}
+
+.clay-surface-elevated {
+  background: var(--clay-surface-raised);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-dark-lg), var(--shadow-light-lg);
+  border: var(--clay-border);
+  transition: var(--transition-normal);
+}
+
+.clay-surface-recessed {
+  background: var(--clay-surface-recessed);
+  border-radius: var(--radius-md);
+  box-shadow: var(--inset-dark), var(--inset-light);
+  border: var(--clay-border-subtle);
+}
+
+.clay-raised {
+  background: var(--clay-surface-raised);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dark-sm), var(--shadow-light-sm);
+  border: var(--clay-border);
+  transition: var(--transition-normal);
+}
+
+.clay-raised:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-dark), var(--shadow-light);
+}
+
+.clay-inset {
+  background: var(--clay-surface-recessed);
+  border-radius: var(--radius-md);
+  box-shadow: var(--inset-dark), var(--inset-light);
+  border: var(--clay-border-subtle);
+}
+
+/* Clay Buttons */
+.clay-button {
+  border-radius: var(--radius-md);
+  border: var(--clay-border);
+  background: var(--clay-surface);
+  box-shadow: var(--shadow-dark-sm), var(--shadow-light-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  padding: 10px 20px;
+}
+
+.clay-button-primary {
+  background: var(--accent-gradient);
+  color: var(--text-on-accent) !important;
+  border: none;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4), inset 2px 2px 4px rgba(255, 255, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.clay-button-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(99, 102, 241, 0.5), inset 2px 2px 4px rgba(255, 255, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.clay-button-primary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.4), inset -2px -2px 4px rgba(255, 255, 255, 0.2);
+}
+
+.clay-button-danger {
+  background: var(--color-danger);
+  color: #ffffff !important;
+  border: none;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+}
+
+/* Clay Inputs */
+.clay-input {
+  background: var(--input-bg);
+  box-shadow: var(--input-shadow);
+  border: var(--input-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 12px 18px;
+}
+
+/* Clay Pills & Badges */
+.clay-pill {
+  border-radius: var(--radius-pill);
+  padding: 6px 16px;
+  background: var(--clay-surface);
+  box-shadow: var(--shadow-dark-sm), var(--shadow-light-sm);
+  border: var(--clay-border-subtle);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.clay-badge {
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  background: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-extrabold);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.clay-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: var(--text-on-accent);
+  font-weight: var(--font-weight-extrabold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  overflow: hidden;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   7. SKELETON LOADERS
+   -------------------------------------------------------------------------- */
+.clay-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--clay-surface) 25%,
+    var(--clay-surface-raised) 50%,
+    var(--clay-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: claySkeletonShimmer 1.8s infinite ease-in-out;
+  border-radius: var(--radius-md);
+}
+
+@keyframes claySkeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --------------------------------------------------------------------------
+   8. TYPOGRAPHY HELPERS
+   -------------------------------------------------------------------------- */
+.text-display {
+  font-size: var(--font-size-6xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.text-h1 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.text-h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.text-h3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.4;
+}
+
+.text-body {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+}
+
+.text-small {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   9. SCROLLBAR SYSTEM
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--clay-surface);
+  box-shadow: var(--shadow-dark-sm);
+  border-radius: var(--radius-pill);
+  border: var(--clay-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* --------------------------------------------------------------------------
+   10. RESPONSIVE UTILITY BREAKPOINTS
+   -------------------------------------------------------------------------- */
+@media (max-width: 1280px) {
+  :root {
+    --font-size-6xl: 3rem;
+    --font-size-5xl: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --font-size-4xl: 1.875rem;
+    --font-size-3xl: 1.5rem;
+  }
+  .clay-surface, .clay-surface-elevated {
+    border-radius: var(--radius-md);
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 15px;
+  }
+}

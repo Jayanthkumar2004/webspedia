@@ -1,0 +1,117 @@
+/* =========================================================
+   USERS TABLE (CLAYMORPHISM)
+========================================================= */
+
+.users-table-card {
+  padding: 28px;
+  margin-bottom: 32px;
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.users-count-pill {
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: var(--clay-bg);
+  box-shadow: var(--clay-inset-sm);
+  border: var(--clay-border-subtle);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.users-table th {
+  background: var(--clay-bg);
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-bottom: var(--clay-border);
+}
+
+.users-table td {
+  padding: 16px 18px;
+  border-bottom: var(--clay-border-subtle);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.user-profile-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.table-user-avatar,
+.table-avatar-initial {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.table-avatar-initial {
+  background: var(--accent-purple-gradient);
+  color: #ffffff;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+.user-name {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.user-id-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-badge.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.status-badge.banned {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.ban-btn:hover {
+  color: #f59e0b;
+}
+
+.unban-btn {
+  color: #10b981;
+}
+
+.table-message {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}

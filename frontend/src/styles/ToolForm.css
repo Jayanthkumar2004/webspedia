@@ -1,0 +1,104 @@
+/* =========================================================
+   TOOL FORM (REBUILT CLAYMORPHISM)
+========================================================= */
+
+.tool-form-card {
+  padding: 28px;
+  margin-bottom: 28px;
+}
+
+.tool-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tool-form-header .title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tool-form-header .header-icon {
+  color: var(--accent-primary);
+}
+
+.tool-form-header h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.tool-form-header p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.tool-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.upload-box-clay {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.upload-box-clay input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.upload-status-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.pdf-preview-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.submit-tool-btn {
+  padding: 12px 28px;
+  font-size: 14px;
+}

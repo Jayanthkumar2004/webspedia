@@ -1,0 +1,64 @@
+/* =========================================================
+   COMMENTS COMPONENT (CLAYMORPHISM)
+========================================================= */
+
+.comments-clay-container {
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.comments-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.comments-header .icon {
+  color: var(--accent-primary);
+}
+
+.comments-header h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.comment-input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.comment-textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.post-btn {
+  align-self: flex-end;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comment-item-card {
+  padding: 16px;
+}
+
+.comment-body-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+
+.comment-timestamp {
+  font-size: 11px;
+  color: var(--text-muted);
+}
