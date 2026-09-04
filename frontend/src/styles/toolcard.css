@@ -1,23 +1,14 @@
 /* =========================================================
-   TOOL CARD (REBUILT CLAYMORPHISM)
+   TOOL CARD (REBUILT CLAYMORPHISM - RESPONSIVE CONTAINED)
 ========================================================= */
 
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 28px;
-}
-
-@media (max-width: 1100px) {
-  .tools-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
-  .tools-grid {
-    grid-template-columns: 1fr;
-  }
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .tool-card {
@@ -29,6 +20,10 @@
   cursor: pointer;
   transition: var(--transition-clay);
   user-select: none;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .tool-card:hover {
@@ -41,6 +36,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 18px;
+  width: 100%;
 }
 
 .tool-logo-box {
@@ -52,6 +48,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .tool-logo-img {
@@ -67,6 +64,7 @@
   padding: 0;
   border-radius: 50%;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .tool-bookmark-btn:hover {
@@ -83,6 +81,8 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  width: 100%;
+  min-width: 0;
 }
 
 .tool-title-text {
@@ -91,6 +91,8 @@
   color: var(--text-primary);
   margin-bottom: 6px;
   line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .tool-desc-text {
@@ -103,11 +105,19 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .tool-category-badge {
-  width: max-content;
+  max-width: 100%;
   margin-bottom: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .tool-rating-row {
@@ -118,6 +128,7 @@
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 18px;
+  flex-wrap: wrap;
 }
 
 .rating-score {
@@ -136,4 +147,31 @@
   border-radius: var(--radius-md);
   font-size: 13px;
   margin-top: auto;
+  box-sizing: border-box;
+}
+
+/* SMARTPHONE BREAKPOINTS (<= 640px) */
+@media (max-width: 640px) {
+  .tools-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .tool-card {
+    padding: 16px 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .tool-title-text {
+    font-size: 16px !important;
+  }
+
+  .tool-logo-box {
+    width: 48px !important;
+    height: 48px !important;
+  }
 }
