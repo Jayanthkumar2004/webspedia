@@ -98,8 +98,12 @@ export default function Login() {
     setResetLoading(true);
 
     try {
+      const redirectUrl = window.location.origin.includes('localhost')
+        ? `${window.location.origin}/reset-password`
+        : 'https://webspedia.vercel.app/reset-password';
+
       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectUrl,
       });
 
       if (resetErr) {
