@@ -1,4 +1,4 @@
-import { LayoutDashboard, Wrench, Users, BarChart3, Megaphone, Sparkles, ArrowLeft, MessageSquareHeart, Globe } from 'lucide-react';
+import { LayoutDashboard, Wrench, Users, BarChart3, Megaphone, Sparkles, ArrowLeft, MessageSquareHeart, Globe, FileCode, FolderKanban, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/admin.css';
 
@@ -7,6 +7,9 @@ export default function Sidebar({ active, setActive }) {
 
   const menu = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} /> },
+    { name: "Website Requests", icon: <FileCode size={18} /> },
+    { name: "Website Portfolio", icon: <FolderKanban size={18} /> },
+    { name: "Website Packages", icon: <Package size={18} /> },
     { name: "Tools", icon: <Wrench size={18} /> },
     { name: "Banners", icon: <Megaphone size={18} /> },
     { name: "Our Websites", icon: <Globe size={18} /> },

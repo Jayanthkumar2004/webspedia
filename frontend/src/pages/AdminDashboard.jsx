@@ -6,6 +6,9 @@ import ToolForm from '../components/admin/ToolForm';
 import BannersManager from '../components/admin/BannersManager';
 import FeedbackManager from '../components/admin/FeedbackManager';
 import WebsitesManager from '../components/admin/WebsitesManager';
+import WebsiteRequestsManager from '../components/admin/WebsiteRequestsManager';
+import WebsitePortfolioManager from '../components/admin/WebsitePortfolioManager';
+import WebsitePackagesManager from '../components/admin/WebsitePackagesManager';
 import Charts from '../components/admin/Charts';
 import StatsCards from '../components/admin/StatsCards';
 import DarkModeToggle from '../components/DarkModeToggle';
@@ -17,7 +20,8 @@ import {
   BarChart3,
   Wrench,
   MessageSquareHeart,
-  Globe
+  Globe,
+  FileCode
 } from 'lucide-react';
 import '../styles/admin.css';
 
@@ -68,7 +72,7 @@ export default function AdminDashboard() {
             </ClayBadge>
             <h1 className="admin-title">{active} Workspace</h1>
             <p className="admin-subtitle">
-              Monitor platform metrics, manage published AI tools, promotional banners, partner websites, user feedback, and supervise accounts.
+              Monitor platform metrics, manage published AI tools, website development requests, portfolio builds, pricing packages, partner sites, and user accounts.
             </p>
           </div>
 
@@ -90,17 +94,17 @@ export default function AdminDashboard() {
                   </ClayBadge>
                   <h2 style={{ fontSize: "26px", fontWeight: "900", margin: "0 0 8px 0" }}>System Overview & Control</h2>
                   <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: 0, maxWidth: "560px" }}>
-                    Manage tool catalog additions, update user permissions, inspect promoted website links, and manage ad banners.
+                    Manage tool catalog additions, inspect client website development requests, configure service packages, and supervise user accounts.
                   </p>
                 </div>
                 <div className="hero-buttons">
-                  <ClayButton variant="primary" onClick={() => setActive("Tools")}>
+                  <ClayButton variant="primary" onClick={() => setActive("Website Requests")}>
+                    <FileCode size={16} />
+                    <span>Website Requests</span>
+                  </ClayButton>
+                  <ClayButton onClick={() => setActive("Tools")}>
                     <Wrench size={16} />
                     <span>Manage Catalog</span>
-                  </ClayButton>
-                  <ClayButton onClick={() => setActive("Our Websites")}>
-                    <Globe size={16} />
-                    <span>Our Websites</span>
                   </ClayButton>
                 </div>
               </div>
@@ -163,6 +167,27 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* WEBSITE REQUESTS TAB */}
+        {active === "Website Requests" && (
+          <div className="website-requests-tab-view">
+            <WebsiteRequestsManager />
+          </div>
+        )}
+
+        {/* WEBSITE PORTFOLIO TAB */}
+        {active === "Website Portfolio" && (
+          <div className="website-portfolio-tab-view">
+            <WebsitePortfolioManager />
+          </div>
+        )}
+
+        {/* WEBSITE PACKAGES TAB */}
+        {active === "Website Packages" && (
+          <div className="website-packages-tab-view">
+            <WebsitePackagesManager />
+          </div>
+        )}
+
         {/* TOOLS TAB */}
         {active === "Tools" && (
           <div className="tools-tab-view">
@@ -178,7 +203,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* WEBSITES TAB */}
+        {/* OUR WEBSITES TAB */}
         {active === "Our Websites" && (
           <div className="websites-tab-view">
             <WebsitesManager />

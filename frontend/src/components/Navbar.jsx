@@ -5,6 +5,7 @@ import DarkModeToggle from './DarkModeToggle';
 import { 
   Sparkles, 
   Home, 
+  Globe,
   MessageSquare, 
   Bookmark, 
   User, 
@@ -91,6 +92,11 @@ export default function Navbar() {
           <Link to="/" className="nav-item" onClick={() => setMobileMenuOpen(false)}>
             <Home size={16} />
             <span>Home</span>
+          </Link>
+
+          <Link to="/website-services" className="nav-item" onClick={() => setMobileMenuOpen(false)}>
+            <Globe size={16} />
+            <span>Build Your Website</span>
           </Link>
 
           <Link to="/chats" className="nav-item" onClick={() => setMobileMenuOpen(false)}>
