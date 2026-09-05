@@ -93,7 +93,7 @@ export default function Navbar() {
       {/* LOGO */}
       <div className="logo" onClick={() => { setMobileMenuOpen(false); navigate('/'); }}>
         <div className="logo-icon-clay">
-          <Sparkles size={20} color="#ffffff" />
+          <img src="/logo.png" alt="Webspedia Logo" className="logo-img" />
         </div>
         <h2>webspedia</h2>
       </div>

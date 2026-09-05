@@ -6,7 +6,12 @@ export default function Footer() {
       <div className="footer-container">
         {/* BRAND */}
         <div className="footer-brand">
-          <h2>webspedia</h2>
+          <div className="footer-logo-row" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <div className="logo-icon-clay" style={{ width: '32px', height: '32px', flexShrink: 0 }}>
+              <img src="/logo.png" alt="Webspedia Logo" className="logo-img" />
+            </div>
+            <h2 style={{ margin: 0 }}>webspedia</h2>
+          </div>
           <p>Discover and share the best AI tools for writing, coding, and design.</p>
         </div>
 

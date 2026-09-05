@@ -23,7 +23,7 @@ export default function Sidebar({ active, setActive }) {
       <div>
         <div className="admin-logo-row" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <div className="admin-logo-icon">
-            <Sparkles size={20} color="#ffffff" />
+            <img src="/logo.png" alt="Webspedia Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
           </div>
           <h2>Admin Hub</h2>
         </div>
