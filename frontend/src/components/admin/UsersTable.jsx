@@ -6,6 +6,7 @@ import '../../styles/UsersTable.css';
 export default function UsersTable() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState({});
   const [bannedMap, setBannedMap] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('banned_user_ids') || '{}');
@@ -27,6 +28,54 @@ export default function UsersTable() {
 
   useEffect(() => {
     fetchUsers();
+
+    let presenceChannel;
+
+    const listenPresence = async () => {
+      const { data } = await supabase.auth.getUser();
+      const currentUser = data?.user;
+
+      const presenceChannelName = `presence-admin-list-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      presenceChannel = supabase.channel(presenceChannelName, {
+        config: {
+          presence: {
+            key: currentUser?.id || 'admin',
+          },
+        },
+      });
+
+      presenceChannel
+        .on('presence', { event: 'sync' }, () => {
+          try {
+            const state = presenceChannel.presenceState();
+            const onlineMap = {};
+            Object.keys(state).forEach(id => {
+              onlineMap[id] = true;
+            });
+            setOnlineUsers(onlineMap);
+          } catch (e) {
+            console.error("Admin presence sync error:", e);
+          }
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED' && currentUser) {
+            try {
+              await presenceChannel.track({
+                user_id: currentUser.id,
+                online_at: new Date().toISOString(),
+              });
+            } catch (e) {
+              console.error("Admin presence track error:", e);
+            }
+          }
+        });
+    };
+
+    listenPresence();
+
+    return () => {
+      if (presenceChannel) supabase.removeChannel(presenceChannel);
+    };
   }, []);
 
   const deleteUser = async (id) => {
@@ -70,22 +119,24 @@ export default function UsersTable() {
     fetchUsers();
   };
 
-  const formatLastSeen = (lastSeenTime, createdAtTime) => {
-    if (!lastSeenTime && !createdAtTime) return "Offline";
+  const formatLastSeen = (userId, lastSeenTime, createdAtTime) => {
+    // 1. If currently connected in Realtime Presence -> Show Online
+    if (onlineUsers[userId]) {
+      return <span style={{ color: "#10b981", fontWeight: "800", display: "inline-flex", alignItems: "center", gap: "4px" }}>● Online</span>;
+    }
 
+    // 2. Otherwise display relative time since offline
     const timestamp = lastSeenTime || createdAtTime;
+    if (!timestamp) return "Offline";
+
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) return "Offline";
 
     const now = new Date();
     const diffMinutes = Math.floor((now - date) / (1000 * 60));
 
-    // Show Online ONLY if last_seen was updated within the last 2 minutes
-    if (lastSeenTime && diffMinutes >= 0 && diffMinutes <= 2) {
-      return <span style={{ color: "#10b981", fontWeight: "800", display: "inline-flex", alignItems: "center", gap: "4px" }}>● Online</span>;
-    }
-
-    if (diffMinutes < 60) return `${Math.max(1, diffMinutes)}m ago`;
+    if (diffMinutes < 1) return "Just now";
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
     if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h ago`;
 
     return date.toLocaleDateString('en-US', {
@@ -102,7 +153,7 @@ export default function UsersTable() {
           <Users size={22} className="header-icon" />
           <div>
             <h2>User Management</h2>
-            <p>Monitor user accounts, roles, last active status, and active/banned permissions</p>
+            <p>Monitor user accounts, roles, real-time active status, and permissions</p>
           </div>
         </div>
 
@@ -132,7 +183,6 @@ export default function UsersTable() {
             ) : users.length > 0 ? (
               users.map(user => {
                 const isBanned = !!(user.is_banned || user.role === 'BANNED' || bannedMap[user.id]);
-                const lastActiveTime = user.last_seen || user.created_at;
 
                 return (
                   <tr key={user.id}>
@@ -173,7 +223,7 @@ export default function UsersTable() {
                     <td>
                       <span className="date-text" style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontWeight: "700" }}>
                         <Clock size={13} color="var(--accent-primary)" />
-                        {formatLastSeen(user.last_seen, user.created_at)}
+                        {formatLastSeen(user.id, user.last_seen, user.created_at)}
                       </span>
                     </td>
 
