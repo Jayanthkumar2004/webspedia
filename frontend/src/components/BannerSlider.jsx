@@ -40,6 +40,28 @@ export default function BannerSlider() {
     }
   ];
 
+  const deduplicateBanners = (list) => {
+    const unique = [];
+    const seen = new Set();
+    (list || []).forEach(item => {
+      const titleKey = (item.title || '').trim().toLowerCase();
+      const urlKey = (item.target_url || item.url || '').trim().toLowerCase();
+      const imageKey = (item.image_url || '').trim().toLowerCase();
+
+      const isDup = (titleKey && seen.has(`t:${titleKey}`)) ||
+                    (urlKey && seen.has(`u:${urlKey}`)) ||
+                    (imageKey && seen.has(`i:${imageKey}`));
+
+      if (!isDup) {
+        if (titleKey) seen.add(`t:${titleKey}`);
+        if (urlKey) seen.add(`u:${urlKey}`);
+        if (imageKey) seen.add(`i:${imageKey}`);
+        unique.push(item);
+      }
+    });
+    return unique;
+  };
+
   useEffect(() => {
     fetchBanners();
   }, []);
@@ -53,24 +75,13 @@ export default function BannerSlider() {
         .order('position', { ascending: true });
 
       if (!error && data && data.length > 0) {
-        // Remove duplicate banners by title or image_url
-        const uniqueBanners = [];
-        const seenKeys = new Set();
-
-        data.forEach(item => {
-          const key = (item.title || item.image_url || '').toLowerCase().trim();
-          if (key && !seenKeys.has(key)) {
-            seenKeys.add(key);
-            uniqueBanners.push(item);
-          }
-        });
-
-        setBanners(uniqueBanners.length > 0 ? uniqueBanners : defaultBanners);
+        const uniqueBanners = deduplicateBanners(data);
+        setBanners(uniqueBanners.length > 0 ? uniqueBanners : deduplicateBanners(defaultBanners));
       } else {
-        setBanners(defaultBanners);
+        setBanners(deduplicateBanners(defaultBanners));
       }
     } catch {
-      setBanners(defaultBanners);
+      setBanners(deduplicateBanners(defaultBanners));
     }
     setLoading(false);
   };

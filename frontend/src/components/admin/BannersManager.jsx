@@ -31,16 +31,34 @@ export default function BannersManager() {
       .select('*')
       .order('position', { ascending: true });
 
-    if (!error) {
+    if (!error && data) {
       const unique = [];
-      const seen = new Set();
-      (data || []).forEach(b => {
-        const key = (b.title || '').trim().toLowerCase();
-        if (key && !seen.has(key)) {
-          seen.add(key);
+      const seenKeys = new Set();
+      const duplicateIds = [];
+
+      data.forEach(b => {
+        const titleKey = (b.title || '').trim().toLowerCase();
+        const urlKey = (b.target_url || '').trim().toLowerCase();
+        const imageKey = (b.image_url || '').trim().toLowerCase();
+
+        const isDup = (titleKey && seenKeys.has(`t:${titleKey}`)) ||
+                      (urlKey && seenKeys.has(`u:${urlKey}`)) ||
+                      (imageKey && seenKeys.has(`i:${imageKey}`));
+
+        if (isDup) {
+          if (b.id) duplicateIds.push(b.id);
+        } else {
+          if (titleKey) seenKeys.add(`t:${titleKey}`);
+          if (urlKey) seenKeys.add(`u:${urlKey}`);
+          if (imageKey) seenKeys.add(`i:${imageKey}`);
           unique.push(b);
         }
       });
+
+      if (duplicateIds.length > 0) {
+        await supabase.from('banners').delete().in('id', duplicateIds);
+      }
+
       setBanners(unique);
     }
     setLoading(false);
