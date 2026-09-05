@@ -216,21 +216,29 @@ export default function Charts() {
               <AreaChart data={analytics}>
                 <defs>
                   <linearGradient id="toolsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="usersGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--clay-border-subtle)" />
                 <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} />
                 <YAxis stroke="var(--text-muted)" fontSize={12} />
-                <Tooltip />
-                <Legend />
-                <Area type="monotone" dataKey="tools" stroke="#6366f1" fill="url(#toolsGradient)" strokeWidth={3} />
-                <Area type="monotone" dataKey="users" stroke="#8b5cf6" fill="url(#usersGradient)" strokeWidth={3} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--clay-surface)',
+                    borderColor: 'var(--clay-border-subtle)',
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                    color: 'var(--text-primary)'
+                  }}
+                />
+                <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                <Area type="monotone" name="Tools Added" dataKey="tools" stroke="#3B82F6" fill="url(#toolsGradient)" strokeWidth={3} dot={{ r: 4, fill: '#3B82F6' }} activeDot={{ r: 6 }} />
+                <Area type="monotone" name="Users Joined" dataKey="users" stroke="#10B981" fill="url(#usersGradient)" strokeWidth={3} dot={{ r: 4, fill: '#10B981' }} activeDot={{ r: 6 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -248,10 +256,18 @@ export default function Charts() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--clay-border-subtle)" />
                 <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} />
                 <YAxis stroke="var(--text-muted)" fontSize={12} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="tools" fill="#6366f1" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="users" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--clay-surface)',
+                    borderColor: 'var(--clay-border-subtle)',
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                    color: 'var(--text-primary)'
+                  }}
+                />
+                <Legend wrapperStyle={{ paddingTop: '10px' }} />
+                <Bar dataKey="tools" name="Tools Added" fill="#3B82F6" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="users" name="Users Joined" fill="#10B981" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
