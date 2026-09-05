@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Users, ShieldAlert, ShieldCheck, Trash2, Ban, Clock } from 'lucide-react';
+import { Users, ShieldAlert, ShieldCheck, Trash2, Ban, Clock, Search, X } from 'lucide-react';
+import { ClayInput } from '../clay';
 import '../../styles/UsersTable.css';
 
 export default function UsersTable() {
@@ -146,9 +147,28 @@ export default function UsersTable() {
     });
   };
 
+  const [search, setSearch] = useState('');
+
+  const filteredUsers = users.filter(user => {
+    const q = search.toLowerCase().trim();
+    if (!q) return true;
+
+    const isBanned = !!(user.is_banned || user.role === 'BANNED' || bannedMap[user.id]);
+    const isOnline = !!onlineUsers[user.id];
+    const statusStr = isBanned ? 'banned' : (isOnline ? 'online' : 'active');
+
+    return (
+      (user.username || '').toLowerCase().includes(q) ||
+      (user.email || '').toLowerCase().includes(q) ||
+      (user.role || '').toLowerCase().includes(q) ||
+      (user.id || '').toLowerCase().includes(q) ||
+      statusStr.includes(q)
+    );
+  });
+
   return (
     <div className="users-table-card clay-card">
-      <div className="users-header">
+      <div className="users-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div className="header-title-group">
           <Users size={22} className="header-icon" />
           <div>
@@ -157,8 +177,23 @@ export default function UsersTable() {
           </div>
         </div>
 
-        <div className="users-count-pill">
-          <span>{users.length} Users</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ position: "relative", minWidth: "240px", maxWidth: "340px" }}>
+            <Search size={16} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", zIndex: 2 }} />
+            <ClayInput
+              placeholder="Search users by name, email, status..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ paddingLeft: "40px", paddingRight: search ? "36px" : "14px", width: "100%" }}
+            />
+            {search && (
+              <X size={15} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", cursor: "pointer", zIndex: 2 }} onClick={() => setSearch('')} title="Clear search" />
+            )}
+          </div>
+
+          <div className="users-count-pill">
+            <span>{filteredUsers.length} Users</span>
+          </div>
         </div>
       </div>
 
@@ -180,8 +215,8 @@ export default function UsersTable() {
               <tr>
                 <td colSpan="6" className="table-message">Loading users...</td>
               </tr>
-            ) : users.length > 0 ? (
-              users.map(user => {
+            ) : filteredUsers.length > 0 ? (
+              filteredUsers.map(user => {
                 const isBanned = !!(user.is_banned || user.role === 'BANNED' || bannedMap[user.id]);
 
                 return (
@@ -259,7 +294,9 @@ export default function UsersTable() {
               })
             ) : (
               <tr>
-                <td colSpan="6" className="table-message">No registered users found.</td>
+                <td colSpan="6" className="table-message">
+                  {search ? `No user accounts found matching "${search}"` : 'No registered users found.'}
+                </td>
               </tr>
             )}
           </tbody>

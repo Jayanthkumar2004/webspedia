@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink } from 'lucide-react';
+import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink, Search } from 'lucide-react';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../../utils/placeholder';
+import { ClayInput } from '../clay';
 import '../../styles/ToolsTable.css';
 
 export default function ToolsTable() {
@@ -104,20 +105,49 @@ export default function ToolsTable() {
     setLoading(false);
   };
 
+  const [search, setSearch] = useState('');
+
+  const filteredTools = tools.filter(tool => {
+    const q = search.toLowerCase().trim();
+    if (!q) return true;
+
+    return (
+      (tool.title || '').toLowerCase().includes(q) ||
+      (tool.category || '').toLowerCase().includes(q) ||
+      (tool.description || '').toLowerCase().includes(q) ||
+      (tool.tool_url || '').toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="tools-table-card clay-card">
       {/* HEADER */}
-      <div className="tools-header">
+      <div className="tools-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div className="header-title-group">
           <Wrench size={22} className="header-icon" />
           <div>
             <h2>Manage AI Tools</h2>
-            <p>Update, edit, or remove published tools</p>
+            <p>Update, edit, search, or remove published tools</p>
           </div>
         </div>
 
-        <div className="tools-count-pill">
-          <span>{tools.length} Tools</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ position: "relative", minWidth: "240px", maxWidth: "340px" }}>
+            <Search size={16} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", zIndex: 2 }} />
+            <ClayInput
+              placeholder="Search tools by title, category, URL..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ paddingLeft: "40px", paddingRight: search ? "36px" : "14px", width: "100%" }}
+            />
+            {search && (
+              <X size={15} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", cursor: "pointer", zIndex: 2 }} onClick={() => setSearch('')} title="Clear search" />
+            )}
+          </div>
+
+          <div className="tools-count-pill">
+            <span>{filteredTools.length} Tools</span>
+          </div>
         </div>
       </div>
 
@@ -236,8 +266,8 @@ export default function ToolsTable() {
           </thead>
 
           <tbody>
-            {tools.length > 0 ? (
-              tools.map(tool => (
+            {filteredTools.length > 0 ? (
+              filteredTools.map(tool => (
                 <tr key={tool.id}>
                   <td>
                     <img
@@ -286,7 +316,7 @@ export default function ToolsTable() {
               <tr>
                 <td colSpan="5">
                   <div className="table-empty-state">
-                    <p>No tools available. Add a tool to manage it here.</p>
+                    <p>{search ? `No AI tools found matching "${search}"` : 'No tools available. Add a tool to manage it here.'}</p>
                   </div>
                 </td>
               </tr>
