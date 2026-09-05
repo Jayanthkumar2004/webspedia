@@ -347,15 +347,15 @@ export default function WebsiteRequestsManager() {
                       {new Date(req.created_at).toLocaleDateString()}
                     </td>
 
-                    <td style={{ padding: "14px 16px", textAlign: "right", minWidth: "160px", whiteSpace: "nowrap" }}>
-                      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "6px" }}>
+                    <td style={{ padding: "14px 16px", textAlign: "right", minWidth: "190px", whiteSpace: "nowrap" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "6px", flexShrink: 0 }}>
                         {/* QUICK PHONE CALL */}
                         <a
                           href={`tel:${req.phone}`}
                           title="Call Customer"
-                          style={{ padding: "6px", borderRadius: "8px", background: "rgba(59, 130, 246, 0.12)", color: "#3b82f6", display: "inline-flex", textDecoration: "none" }}
+                          style={{ width: "32px", height: "32px", flexShrink: 0, borderRadius: "8px", background: "rgba(59, 130, 246, 0.12)", color: "#3b82f6", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
                         >
-                          <Phone size={14} />
+                          <Phone size={15} />
                         </a>
 
                         {/* QUICK WHATSAPP */}
@@ -365,9 +365,9 @@ export default function WebsiteRequestsManager() {
                             target="_blank"
                             rel="noreferrer"
                             title="Chat on WhatsApp"
-                            style={{ padding: "6px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.12)", color: "#10b981", display: "inline-flex", textDecoration: "none" }}
+                            style={{ width: "32px", height: "32px", flexShrink: 0, borderRadius: "8px", background: "rgba(16, 185, 129, 0.12)", color: "#10b981", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
                           >
-                            <MessageCircle size={14} />
+                            <MessageCircle size={15} />
                           </a>
                         )}
 
@@ -375,14 +375,14 @@ export default function WebsiteRequestsManager() {
                         <a
                           href={`mailto:${req.email}?subject=${encodeURIComponent(`Webspedia Website Request - ${req.business_name}`)}`}
                           title="Send Email"
-                          style={{ padding: "6px", borderRadius: "8px", background: "rgba(168, 85, 247, 0.12)", color: "#a855f7", display: "inline-flex", textDecoration: "none" }}
+                          style={{ width: "32px", height: "32px", flexShrink: 0, borderRadius: "8px", background: "rgba(168, 85, 247, 0.12)", color: "#a855f7", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
                         >
-                          <Mail size={14} />
+                          <Mail size={15} />
                         </a>
 
                         {/* EDIT / DETAILS */}
-                        <ClayButton size="sm" onClick={() => openDetailsModal(req)} title="View / Edit Details">
-                          <Pencil size={13} />
+                        <ClayButton size="sm" onClick={() => openDetailsModal(req)} title="View / Edit Details" style={{ width: "32px", height: "32px", flexShrink: 0, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                          <Pencil size={14} />
                         </ClayButton>
 
                         {/* DELETE */}
@@ -390,9 +390,9 @@ export default function WebsiteRequestsManager() {
                           size="sm"
                           onClick={() => handleDelete(req.id, req.full_name)}
                           title="Delete Request"
-                          style={{ background: "rgba(239, 68, 68, 0.12)", color: "#ef4444", border: "1px solid rgba(239, 68, 68, 0.25)" }}
+                          style={{ width: "32px", height: "32px", flexShrink: 0, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(239, 68, 68, 0.12)", color: "#ef4444", border: "1px solid rgba(239, 68, 68, 0.25)" }}
                         >
-                          <Trash2 size={13} />
+                          <Trash2 size={14} />
                         </ClayButton>
                       </div>
                     </td>
