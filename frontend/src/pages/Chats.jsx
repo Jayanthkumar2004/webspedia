@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { MessageSquare, Search, ArrowRight, Sparkles, Trash2, UserX } from 'lucide-react';
+import { MessageSquare, Search, ArrowRight, Sparkles, Trash2, UserX, X } from 'lucide-react';
 import '../styles/Chats.css';
 
 export default function Chats() {
@@ -229,10 +229,85 @@ export default function Chats() {
     }
   };
 
-  const filteredProfiles = profiles.filter(profile =>
-    profile.username?.toLowerCase().includes(search.toLowerCase()) ||
-    profile.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) {
+      setSearchResults([]);
+      return;
+    }
+
+    const performUserSearch = async () => {
+      setSearching(true);
+      try {
+        const activeUser = currentUser || (await getSafeUser());
+        const activeId = activeUser?.id || '';
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .neq('id', activeId)
+          .or(`username.ilike.%${q}%,email.ilike.%${q}%`)
+          .limit(20);
+
+        if (!error && data) {
+          setSearchResults(data);
+        } else {
+          const { data: allProfiles } = await supabase.from('profiles').select('*');
+          const matched = (allProfiles || []).filter(p =>
+            p.id !== activeId && (
+              (p.username || '').toLowerCase().includes(q) ||
+              (p.email || '').toLowerCase().includes(q)
+            )
+          );
+          setSearchResults(matched);
+        }
+      } catch (err) {
+        console.error("User search error:", err);
+      }
+      setSearching(false);
+    };
+
+    const timer = setTimeout(() => {
+      performUserSearch();
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [search, currentUser]);
+
+  // Combine active conversation profiles and search results when searching
+  const isSearching = !!search.trim();
+
+  const displayList = isSearching ? (() => {
+    const combined = [];
+    const seen = new Set();
+
+    // First add active conversation matches
+    profiles.forEach(p => {
+      const match = (p.username || '').toLowerCase().includes(search.toLowerCase()) ||
+                    (p.email || '').toLowerCase().includes(search.toLowerCase());
+      if (match && !seen.has(p.id)) {
+        seen.add(p.id);
+        combined.push(p);
+      }
+    });
+
+    // Then add global user search matches from DB
+    searchResults.forEach(p => {
+      if (!seen.has(p.id)) {
+        seen.add(p.id);
+        combined.push({
+          ...p,
+          lastMessage: p.email ? `Email: ${p.email}` : "Click to start chatting",
+          lastTime: ""
+        });
+      }
+    });
+
+    return combined;
+  })() : profiles;
 
   const formatTime = (time) => {
     if (!time) return "";
@@ -257,35 +332,44 @@ export default function Chats() {
             <div className="chat-sidebar-top">
               <div className="sidebar-title-row">
                 <MessageSquare size={22} className="icon" />
-                <h2>Messages ({profiles.length})</h2>
+                <h2>Messages ({isSearching ? displayList.length : profiles.length})</h2>
               </div>
 
-              <div className="search-input-wrapper">
+              <div className="search-input-wrapper" style={{ position: 'relative' }}>
                 <Search size={16} className="search-icon" />
                 <input
                   type="text"
                   className="clay-input"
-                  placeholder="Search conversations..."
+                  placeholder="Search users by username or email..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  style={{ paddingLeft: '38px', paddingRight: search ? '32px' : '14px', width: '100%' }}
                 />
+                {search && (
+                  <X
+                    size={14}
+                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', cursor: 'pointer', zIndex: 2 }}
+                    onClick={() => setSearch('')}
+                    title="Clear search"
+                  />
+                )}
               </div>
             </div>
 
             <div className="chat-users-list">
-              {loading && (
+              {(loading || searching) && (
                 <div className="empty-chat">
-                  <p>Loading conversations...</p>
+                  <p>{searching ? `Searching users for "${search}"...` : 'Loading conversations...'}</p>
                 </div>
               )}
 
-              {!loading && filteredProfiles.length === 0 && (
+              {!loading && !searching && displayList.length === 0 && (
                 <div className="empty-chat">
-                  <p>No active conversations yet. Click "Chat" on a profile or tool review to message someone!</p>
+                  <p>{isSearching ? `No registered users found matching "${search}".` : 'No active conversations yet. Click "Chat" on a profile or tool review to message someone!'}</p>
                 </div>
               )}
 
-              {filteredProfiles.map(profile => {
+              {displayList.map(profile => {
                 const isOnline = !!onlineUsers[profile.id];
 
                 return (
@@ -308,30 +392,34 @@ export default function Chats() {
 
                       <div className="chat-user-info">
                         <h3>{profile.username || profile.email?.split('@')[0] || "User"}</h3>
-                        <p>{profile.lastMessage}</p>
+                        <p>{profile.lastMessage || profile.email || "Click to start chatting"}</p>
                       </div>
                     </div>
 
                     <div className="chat-user-right">
                       <span className="chat-time">{formatTime(profile.lastTime)}</span>
                       <div className="chat-card-actions">
-                        <button
-                          className="delete-icon-btn"
-                          onClick={(e) => deleteChatHistory(profile.id, profile.username, e)}
-                          title="Delete Chat History"
-                          type="button"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {profile.lastTime && (
+                          <>
+                            <button
+                              className="delete-icon-btn"
+                              onClick={(e) => deleteChatHistory(profile.id, profile.username, e)}
+                              title="Delete Chat History"
+                              type="button"
+                            >
+                              <Trash2 size={14} />
+                            </button>
 
-                        <button
-                          className="delete-contact-icon-btn"
-                          onClick={(e) => deleteContactItem(profile.id, profile.username, e)}
-                          title="Delete Contact"
-                          type="button"
-                        >
-                          <UserX size={14} />
-                        </button>
+                            <button
+                              className="delete-contact-icon-btn"
+                              onClick={(e) => deleteContactItem(profile.id, profile.username, e)}
+                              title="Delete Contact"
+                              type="button"
+                            >
+                              <UserX size={14} />
+                            </button>
+                          </>
+                        )}
 
                         <ArrowRight size={14} className="chat-arrow" />
                       </div>
