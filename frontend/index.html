@@ -6,12 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>webspedia</title>
     <script>
+      // Filter out third-party browser extension noise (e.g. WhatsApp Web extensions, chrome content scripts)
       window.addEventListener('error', function(e) {
-        if (e && e.message && (e.message.indexOf('startTime') !== -1 || e.message.indexOf('reportAllChanges') !== -1)) {
-          e.stopImmediatePropagation();
-          e.preventDefault();
+        var msg = (e && e.message) || '';
+        if (
+          msg.indexOf('startTime') !== -1 ||
+          msg.indexOf('reportAllChanges') !== -1 ||
+          msg.indexOf('Not allowed to load local resource') !== -1 ||
+          msg.indexOf('whatsapp') !== -1
+        ) {
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+          if (e.preventDefault) e.preventDefault();
+          return true;
         }
       }, true);
+
+      window.addEventListener('unhandledrejection', function(e) {
+        var reason = (e && e.reason && (e.reason.message || e.reason)) || '';
+        if (
+          reason.indexOf('startTime') !== -1 ||
+          reason.indexOf('reportAllChanges') !== -1 ||
+          reason.indexOf('Not allowed to load local resource') !== -1 ||
+          reason.indexOf('whatsapp') !== -1
+        ) {
+          if (e.preventDefault) e.preventDefault();
+        }
+      });
     </script>
   </head>
   <body>
