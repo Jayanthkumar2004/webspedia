@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
+import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
 import '../styles/toolcard.css';
 
 export default function ToolCard({ tool }) {
@@ -106,8 +107,9 @@ export default function ToolCard({ tool }) {
       <div className="tool-top">
         <div className="tool-logo-box clay-inset">
           <img
-            src={tool.image_url || "https://via.placeholder.com/80"}
+            src={tool.image_url || DEFAULT_TOOL_ICON}
             alt={tool.title}
+            onError={(e) => handleImageError(e, DEFAULT_TOOL_ICON)}
             className="tool-logo-img"
           />
         </div>

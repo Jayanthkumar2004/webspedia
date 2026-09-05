@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ClayCard, ClayButton, ClayInput, ClayBadge, ClayAvatar } from "../components/clay";
+import { DEFAULT_TOOL_ICON, handleImageError } from "../utils/placeholder";
 import { 
   User, 
   Camera, 
@@ -278,8 +279,9 @@ export default function Profile() {
                     onClick={() => navigate(`/tool/${tool.id}`)}
                   >
                     <img
-                      src={tool.image_url || "https://via.placeholder.com/80"}
+                      src={tool.image_url || DEFAULT_TOOL_ICON}
                       alt={tool.title}
+                      onError={(e) => handleImageError(e, DEFAULT_TOOL_ICON)}
                       className="saved-mini-img"
                     />
                     <div>

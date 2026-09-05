@@ -13,6 +13,7 @@ import Charts from '../components/admin/Charts';
 import StatsCards from '../components/admin/StatsCards';
 import DarkModeToggle from '../components/DarkModeToggle';
 import { ClayCard, ClayButton, ClayBadge, ClayAvatar } from '../components/clay';
+import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
 import { supabase } from '../lib/supabase';
 import {
   Sparkles,
@@ -136,7 +137,7 @@ export default function AdminDashboard() {
                 <div className="dashboard-list" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   {recentTools.map(tool => (
                     <ClayCard recessed key={tool.id} style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: "14px" }}>
-                      <img src={tool.image_url || "https://via.placeholder.com/40"} alt="" style={{ width: "40px", height: "40px", borderRadius: "var(--radius-sm)", objectFit: "cover" }} />
+                      <img src={tool.image_url || DEFAULT_TOOL_ICON} alt="" onError={(e) => handleImageError(e, DEFAULT_TOOL_ICON)} style={{ width: "40px", height: "40px", borderRadius: "var(--radius-sm)", objectFit: "cover" }} />
                       <div className="item-info">
                         <h4 style={{ margin: "0 0 2px 0", fontSize: "14px", fontWeight: "800" }}>{tool.title}</h4>
                         <ClayBadge>{tool.category || "AI Tool"}</ClayBadge>

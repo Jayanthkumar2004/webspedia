@@ -13,8 +13,13 @@ import {
   CornerDownRight, 
   Star,
   ChevronRight,
+  ShieldCheck,
+  Zap,
+  Globe,
+  Share2,
   Bookmark
 } from 'lucide-react';
+import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
 import '../styles/tooldetails.css';
 
 export default function ToolDetails() {
@@ -266,7 +271,7 @@ export default function ToolDetails() {
         <section className="product-hero-card clay-surface">
           <div className="product-hero-left">
             <div className="product-logo-container clay-inset">
-              <img src={tool.image_url || "https://via.placeholder.com/120"} alt={tool.title} />
+              <img src={tool.image_url || DEFAULT_TOOL_ICON} alt={tool.title} onError={(e) => handleImageError(e, DEFAULT_TOOL_ICON)} />
             </div>
 
             <div className="product-header-info">

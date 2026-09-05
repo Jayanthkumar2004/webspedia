@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { ClayCard, ClayButton, ClayBadge } from './clay';
 import { ChevronLeft, ChevronRight, ExternalLink, Megaphone } from 'lucide-react';
+import { DEFAULT_BANNER_IMAGE, handleImageError } from '../utils/placeholder';
 import '../styles/home.css';
 
 export default function BannerSlider() {
@@ -153,8 +154,9 @@ export default function BannerSlider() {
         {/* RIGHT IMAGE SHOWCASE */}
         <div style={{ position: 'relative', overflow: 'hidden', minHeight: '260px' }}>
           <img
-            src={currentBanner.image_url || 'https://via.placeholder.com/800x400'}
+            src={currentBanner.image_url || DEFAULT_BANNER_IMAGE}
             alt={currentBanner.title}
+            onError={(e) => handleImageError(e, DEFAULT_BANNER_IMAGE)}
             style={{
               width: '100%',
               height: '100%',

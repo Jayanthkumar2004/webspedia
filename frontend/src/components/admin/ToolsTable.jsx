@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink } from 'lucide-react';
+import { DEFAULT_TOOL_ICON, handleImageError } from '../../utils/placeholder';
 import '../../styles/ToolsTable.css';
 
 export default function ToolsTable() {
@@ -240,8 +241,9 @@ export default function ToolsTable() {
                 <tr key={tool.id}>
                   <td>
                     <img
-                      src={tool.image_url || 'https://via.placeholder.com/50'}
+                      src={tool.image_url || DEFAULT_TOOL_ICON}
                       alt={tool.title}
+                      onError={(e) => handleImageError(e, DEFAULT_TOOL_ICON)}
                       className="table-tool-img"
                     />
                   </td>

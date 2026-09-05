@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { ClayCard, ClayButton, ClayInput, ClayTextarea, ClayBadge, ClayModal } from '../clay';
 import { Megaphone, Plus, Edit, Trash2, CheckCircle2, XCircle, ExternalLink, Image as ImageIcon, MoveUp, MoveDown } from 'lucide-react';
+import { DEFAULT_BANNER_IMAGE, handleImageError } from '../../utils/placeholder';
 
 export default function BannersManager() {
   const [banners, setBanners] = useState([]);
@@ -214,8 +215,9 @@ export default function BannersManager() {
               <ClayCard recessed key={banner.id} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                   <img
-                    src={banner.image_url || 'https://via.placeholder.com/120x80'}
+                    src={banner.image_url || DEFAULT_BANNER_IMAGE}
                     alt=""
+                    onError={(e) => handleImageError(e, DEFAULT_BANNER_IMAGE)}
                     style={{ width: '80px', height: '54px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }}
                   />
 
