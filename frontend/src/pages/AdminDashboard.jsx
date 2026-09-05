@@ -6,6 +6,7 @@ import ToolForm from '../components/admin/ToolForm';
 import BannersManager from '../components/admin/BannersManager';
 import FeedbackManager from '../components/admin/FeedbackManager';
 import WebsitesManager from '../components/admin/WebsitesManager';
+import WebsiteServicesHub from '../components/admin/WebsiteServicesHub';
 import WebsiteRequestsManager from '../components/admin/WebsiteRequestsManager';
 import WebsitePortfolioManager from '../components/admin/WebsitePortfolioManager';
 import WebsitePackagesManager from '../components/admin/WebsitePackagesManager';
@@ -168,24 +169,10 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* WEBSITE REQUESTS TAB */}
-        {active === "Website Requests" && (
-          <div className="website-requests-tab-view">
-            <WebsiteRequestsManager />
-          </div>
-        )}
-
-        {/* WEBSITE PORTFOLIO TAB */}
-        {active === "Website Portfolio" && (
-          <div className="website-portfolio-tab-view">
-            <WebsitePortfolioManager />
-          </div>
-        )}
-
-        {/* WEBSITE PACKAGES TAB */}
-        {active === "Website Packages" && (
-          <div className="website-packages-tab-view">
-            <WebsitePackagesManager />
+        {/* WEBSITE SERVICES HUB */}
+        {(active === "Website Services" || active === "Website Requests" || active === "Website Portfolio" || active === "Website Packages") && (
+          <div className="website-services-tab-view">
+            <WebsiteServicesHub />
           </div>
         )}
 

@@ -7,6 +7,7 @@ export default function Sidebar({ active, setActive }) {
 
   const menu = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} /> },
+    { name: "Website Services", icon: <FileCode size={18} /> },
     { name: "Website Requests", icon: <FileCode size={18} /> },
     { name: "Website Portfolio", icon: <FolderKanban size={18} /> },
     { name: "Website Packages", icon: <Package size={18} /> },

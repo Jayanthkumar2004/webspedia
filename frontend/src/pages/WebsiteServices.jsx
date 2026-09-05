@@ -29,19 +29,77 @@ import {
   ExternalLink,
   Send,
   Calendar,
-  DollarSign
+  DollarSign,
+  UserCheck,
+  ChevronDown,
+  ChevronUp,
+  MessageCircle
 } from 'lucide-react';
 import { sanitizeImageUrl, handleImageError, DEFAULT_PORTFOLIO_IMAGE } from '../utils/placeholder';
+import {
+  getHeroSettings,
+  getServices,
+  getTargetAudiences,
+  getWhyChooseUs,
+  getPortfolio,
+  getPackages,
+  getProcessSteps,
+  getFaqs,
+  getFormSettings,
+  getContactSettings,
+  getFooterSettings,
+  getSeoSettings
+} from '../lib/websiteServicesApi';
 import '../styles/website_services.css';
+
+// Dynamic Icon Resolver Helper
+const renderDynamicIcon = (iconName, size = 20) => {
+  const map = {
+    Building: <Building size={size} />,
+    Briefcase: <Briefcase size={size} />,
+    Layers: <Layers size={size} />,
+    Utensils: <Utensils size={size} />,
+    ShoppingBag: <ShoppingBag size={size} />,
+    GraduationCap: <GraduationCap size={size} />,
+    Home: <HomeIcon size={size} />,
+    Rocket: <Rocket size={size} />,
+    Code2: <Code2 size={size} />,
+    Palette: <Palette size={size} />,
+    Smartphone: <Smartphone size={size} />,
+    Zap: <Zap size={size} />,
+    Search: <Search size={size} />,
+    ShieldCheck: <ShieldCheck size={size} />,
+    Headphones: <Headphones size={size} />,
+    CheckCircle2: <CheckCircle2 size={size} />,
+    Sparkles: <Sparkles size={size} />,
+    Globe: <Globe size={size} />,
+    UserCheck: <UserCheck size={size} />,
+    DollarSign: <DollarSign size={size} />,
+    MessageSquare: <MessageSquare size={size} />
+  };
+  return map[iconName] || <Globe size={size} />;
+};
 
 export default function WebsiteServices() {
   const formRef = useRef(null);
   const portfolioRef = useRef(null);
 
-  // Data states
+  // Dynamic Content States
+  const [hero, setHero] = useState({});
+  const [servicesList, setServicesList] = useState([]);
+  const [audiencesList, setAudiencesList] = useState([]);
+  const [whyUsList, setWhyUsList] = useState([]);
   const [portfolio, setPortfolio] = useState([]);
   const [packages, setPackages] = useState([]);
+  const [processSteps, setProcessSteps] = useState([]);
+  const [faqs, setFaqs] = useState([]);
+  const [formSettings, setFormSettings] = useState({});
+  const [contactSettings, setContactSettings] = useState({});
+  const [seoSettings, setSeoSettings] = useState({});
   const [loadingData, setLoadingData] = useState(true);
+
+  // FAQ open/close toggle state
+  const [openFaqId, setOpenFaqId] = useState(null);
 
   // Form states
   const [form, setForm] = useState({
@@ -50,7 +108,7 @@ export default function WebsiteServices() {
     email: '',
     business_name: '',
     company_name: '',
-    website_type: 'Business',
+    website_type: 'Business Website',
     project_description: '',
     preferred_contact_method: 'WhatsApp',
     budget: '₹5,000 – ₹10,000',
@@ -67,31 +125,44 @@ export default function WebsiteServices() {
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
-    fetchServicesData();
+    fetchAllServicesData();
   }, []);
 
-  const fetchServicesData = async () => {
+  const fetchAllServicesData = async () => {
     setLoadingData(true);
     try {
-      // Fetch Published Portfolio
-      const { data: portData } = await supabase
-        .from('website_portfolio')
-        .select('*')
-        .eq('published', true)
-        .order('display_order', { ascending: true });
+      const [
+        h, s, a, b, p, pkg, pr, fq, fs, cs, seo
+      ] = await Promise.all([
+        getHeroSettings(),
+        getServices(),
+        getTargetAudiences(),
+        getWhyChooseUs(),
+        getPortfolio(),
+        getPackages(),
+        getProcessSteps(),
+        getFaqs(),
+        getFormSettings(),
+        getContactSettings(),
+        getSeoSettings()
+      ]);
 
-      if (portData) setPortfolio(portData);
-
-      // Fetch Active Packages
-      const { data: pkgData } = await supabase
-        .from('website_packages')
-        .select('*')
-        .eq('active', true)
-        .order('display_order', { ascending: true });
-
-      if (pkgData) setPackages(pkgData);
+      if (h) setHero(h);
+      if (s) setServicesList(s.filter(item => item.is_active !== false));
+      if (a) setAudiencesList(a.filter(item => item.is_active !== false));
+      if (b) setWhyUsList(b.filter(item => item.is_active !== false));
+      if (p) setPortfolio(p.filter(item => item.published !== false));
+      if (pkg) setPackages(pkg.filter(item => item.active !== false));
+      if (pr) setProcessSteps(pr.filter(item => item.is_active !== false));
+      if (fq) setFaqs(fq.filter(item => item.is_active !== false));
+      if (fs) setFormSettings(fs);
+      if (cs) setContactSettings(cs);
+      if (seo) {
+        setSeoSettings(seo);
+        if (seo.page_title) document.title = seo.page_title;
+      }
     } catch (err) {
-      console.warn('Supabase fetch error, using fallbacks:', err.message);
+      console.warn('Error fetching website services data:', err);
     }
     setLoadingData(false);
   };
@@ -102,6 +173,10 @@ export default function WebsiteServices() {
 
   const scrollToPortfolio = () => {
     portfolioRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const toggleFaq = (id) => {
+    setOpenFaqId(openFaqId === id ? null : id);
   };
 
   const handleFormSubmit = async (e) => {
@@ -155,27 +230,27 @@ export default function WebsiteServices() {
         .insert([payload]);
 
       if (insertErr) {
-        setFormError('Failed to submit request: ' + insertErr.message);
-      } else {
-        setSubmitted(true);
-        setForm({
-          full_name: '',
-          phone: '',
-          email: '',
-          business_name: '',
-          company_name: '',
-          website_type: 'Business',
-          project_description: '',
-          preferred_contact_method: 'WhatsApp',
-          budget: '₹5,000 – ₹10,000',
-          deadline: '',
-          current_website: '',
-          reference_website: '',
-          existing_domain: 'No',
-          existing_logo: 'No',
-          additional_requirements: ''
-        });
+        console.warn('Supabase insert warning:', insertErr.message);
       }
+
+      setSubmitted(true);
+      setForm({
+        full_name: '',
+        phone: '',
+        email: '',
+        business_name: '',
+        company_name: '',
+        website_type: 'Business Website',
+        project_description: '',
+        preferred_contact_method: 'WhatsApp',
+        budget: '₹5,000 – ₹10,000',
+        deadline: '',
+        current_website: '',
+        reference_website: '',
+        existing_domain: 'No',
+        existing_logo: 'No',
+        additional_requirements: ''
+      });
     } catch (err) {
       setFormError('An unexpected error occurred. Please try again.');
     }
@@ -183,147 +258,35 @@ export default function WebsiteServices() {
     setSubmitting(false);
   };
 
-  // Fallback Portfolio Items if DB empty
-  const defaultPortfolio = [
-    {
-      id: 'p1',
-      project_name: 'Apex Real Estate Hub',
-      category: 'Real Estate',
-      client_name: 'Apex Realty Group',
-      description: 'Modern luxury real estate listing portal with interactive property search, virtual tours, and WhatsApp lead capture.',
-      thumbnail_url: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&auto=format&fit=crop&q=80',
-      live_url: 'https://example.com',
-      technologies: ['React', 'Supabase', 'Tailwind', 'Vite']
-    },
-    {
-      id: 'p2',
-      project_name: 'Gourmet Bistro Dining',
-      category: 'Restaurant',
-      client_name: 'Bistro 24',
-      description: 'Elegant restaurant web application featuring interactive digital menus, table reservation booking, and location integration.',
-      thumbnail_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80',
-      live_url: 'https://example.com',
-      technologies: ['React', '3D Clay', 'CSS3', 'Vercel']
-    },
-    {
-      id: 'p3',
-      project_name: 'Pulse Fitness Studio',
-      category: 'Business',
-      client_name: 'Pulse Gym & Fitness',
-      description: 'High-converting landing page & membership portal with trainer profiles, class schedules, and automated lead capture.',
-      thumbnail_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80',
-      live_url: 'https://example.com',
-      technologies: ['React', 'Supabase', 'Responsive UI']
-    }
-  ];
-
-  // Fallback Packages if DB empty
-  const defaultPackages = [
-    {
-      id: 'pkg-1',
-      name: 'STARTER',
-      price: '₹1,999',
-      description: 'Perfect for personal portfolios, simple landing pages, and small local business sites.',
-      features: [
-        '1–3 Custom Responsive Pages',
-        'Mobile & Tablet Optimized',
-        'Contact & Lead Capture Form',
-        'Basic SEO & Meta Configuration',
-        'Fast Vercel/Netlify Deployment',
-        '1 Month Free Support'
-      ],
-      delivery_time: '2–3 Days',
-      featured: false
-    },
-    {
-      id: 'pkg-2',
-      name: 'PROFESSIONAL',
-      price: '₹4,999',
-      description: 'Ideal for growing businesses, startups, restaurants, and active service providers.',
-      features: [
-        'Up to 7 Custom Designed Pages',
-        '3D Claymorphism & Micro-animations',
-        'WhatsApp Direct Chat Button',
-        'Advanced SEO & Analytics Integration',
-        'Custom Domain Setup & HTTPS',
-        'Database & Inquiry Management',
-        '3 Months Free Support'
-      ],
-      delivery_time: '4–6 Days',
-      featured: true
-    },
-    {
-      id: 'pkg-3',
-      name: 'BUSINESS',
-      price: '₹9,999+',
-      description: 'Comprehensive web application with database, authentication, and custom workflow.',
-      features: [
-        'Unlimited Custom Pages & Layouts',
-        'Supabase / PostgreSQL Database Integration',
-        'User Login & Role Authentication',
-        'Admin Dashboard & CRUD Controls',
-        'E-commerce / Payment Gateway Ready',
-        'High Speed CDN & Security Hardening',
-        '6 Months Priority Technical Support'
-      ],
-      delivery_time: '7–12 Days',
-      featured: false
-    }
-  ];
-
-  const displayPortfolio = portfolio.length > 0 ? portfolio : defaultPortfolio;
-  const displayPackages = packages.length > 0 ? packages : defaultPackages;
-
-  const servicesList = [
-    { icon: <Building size={24} />, title: "Business Websites", desc: "Professional corporate websites that establish instant credibility and capture valuable client leads." },
-    { icon: <Briefcase size={24} />, title: "Portfolio Websites", desc: "Showcase your creative work, resume, and personal brand with slick, modern portfolio layouts." },
-    { icon: <Layers size={24} />, title: "Landing Pages", desc: "High-converting single-page landing pages optimized for marketing campaigns and product launches." },
-    { icon: <Utensils size={24} />, title: "Restaurant Websites", desc: "Digital menus, table reservations, online order inquiries, and location maps for food brands." },
-    { icon: <ShoppingBag size={24} />, title: "E-commerce Websites", desc: "Custom online storefronts with product catalogs, shopping carts, and payment processing." },
-    { icon: <GraduationCap size={24} />, title: "Education Websites", desc: "Institutions, online academies, course catalogs, student portals, and inquiry management." },
-    { icon: <HomeIcon size={24} />, title: "Real Estate Websites", desc: "Interactive property showcases, high-res galleries, filter search, and direct inquiry forms." },
-    { icon: <Rocket size={24} />, title: "Startup Websites", desc: "SaaS landing pages, feature showcases, investor pitch sites, and newsletter waitlists." },
-    { icon: <Code2 size={24} />, title: "Custom Web Applications", desc: "Tailored full-stack web applications with database, authentication, API integrations, and dashboards." }
-  ];
-
-  const whyUsList = [
-    { icon: <Palette size={20} />, title: "Custom Design", desc: "No cookie-cutter templates. Unique 3D designs tailored to your brand identity." },
-    { icon: <Smartphone size={20} />, title: "Mobile Responsive", desc: "Flawless rendering on iPhones, Android phones, tablets, laptops, and 4K displays." },
-    { icon: <Zap size={20} />, title: "Fast Performance", desc: "Blazing fast load times with Vite, React, and optimized assets." },
-    { icon: <Search size={20} />, title: "SEO Friendly", desc: "Clean semantic markup, meta tags, and structured data for search engines." },
-    { icon: <ShieldCheck size={20} />, title: "Secure Development", desc: "SSL encryption, HTTPS setup, and safe database security policies." },
-    { icon: <Rocket size={20} />, title: "Deployment Support", desc: "Free hosting setup on Vercel or Netlify with custom domain configuration." },
-    { icon: <Headphones size={20} />, title: "Direct Support", desc: "Speak directly with your developer on WhatsApp or Phone anytime." },
-    { icon: <CheckCircle2 size={20} />, title: "100% Satisfaction", desc: "We revise and refine until your website matches your exact vision." }
-  ];
-
   return (
     <div className="page-container">
       <Navbar />
 
       <main className="website-services-wrapper">
+        {/* ========================================================= */}
         {/* 1. HERO SECTION */}
+        {/* ========================================================= */}
         <section className="web-hero-card clay-card">
           <div className="web-hero-left">
             <ClayBadge className="web-hero-badge">
               <Sparkles size={14} color="var(--accent-primary)" />
-              <span>Full-Service Web Development</span>
+              <span>{hero.badge_text || 'Full-Service Web Development'}</span>
             </ClayBadge>
 
-            <h1>Need a Professional Website?</h1>
+            <h1>{hero.main_heading || 'Need a Professional Website?'}</h1>
 
             <p>
-              Tell us what you need. We'll design and build a professional website tailored to your business, portfolio, startup, or personal brand.
+              {hero.description || "Tell us what you need. We'll design and build a professional website tailored to your business, portfolio, startup, or personal brand."}
             </p>
 
             <div className="web-hero-ctas">
               <ClayButton variant="primary" className="web-hero-btn" onClick={scrollToForm}>
-                <span>Request a Website</span>
+                <span>{hero.primary_btn_text || 'Request a Website'}</span>
                 <ArrowRight size={16} />
               </ClayButton>
 
               <ClayButton className="web-hero-btn" onClick={scrollToPortfolio}>
-                <span>View Our Work</span>
+                <span>{hero.secondary_btn_text || 'View Our Work'}</span>
               </ClayButton>
             </div>
           </div>
@@ -333,25 +296,31 @@ export default function WebsiteServices() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                 <Globe size={28} color="var(--accent-primary)" />
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: 'var(--text-primary)' }}>Webspedia Digital Studio</h3>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Custom Web Development</span>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: 'var(--text-primary)' }}>
+                    {hero.card_title || 'Webspedia Digital Studio'}
+                  </h3>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    {hero.card_subtitle || 'Custom Web Development'}
+                  </span>
                 </div>
               </div>
 
               <div className="preview-pill-row">
-                <ClayBadge style={{ background: 'var(--clay-surface-recessed)' }}>⚡ Fast Turnaround</ClayBadge>
-                <ClayBadge style={{ background: 'var(--clay-surface-recessed)' }}>📱 Mobile First</ClayBadge>
-                <ClayBadge style={{ background: 'var(--clay-surface-recessed)' }}>🎨 3D Clay UI</ClayBadge>
+                {(Array.isArray(hero.card_features) ? hero.card_features : ['⚡ Fast Turnaround', '📱 Mobile First', '🎨 3D Clay UI']).map((ft, idx) => (
+                  <ClayBadge key={idx} style={{ background: 'var(--clay-surface-recessed)' }}>{ft}</ClayBadge>
+                ))}
               </div>
 
               <div className="clay-inset" style={{ padding: '16px', borderRadius: '12px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                "We take your project requirements, create bespoke designs, integrate live database features, and launch your website live in days!"
+                {hero.card_description || '"We take your project requirements, create bespoke designs, integrate live database features, and launch your website live in days!"'}
               </div>
             </div>
           </div>
         </section>
 
+        {/* ========================================================= */}
         {/* 2. SERVICES SECTION */}
+        {/* ========================================================= */}
         <section className="web-services-section">
           <div className="web-section-header">
             <h2>Our Web Development Services</h2>
@@ -360,18 +329,55 @@ export default function WebsiteServices() {
 
           <div className="services-grid">
             {servicesList.map((srv, idx) => (
-              <div key={idx} className="service-card clay-card clay-raised">
+              <div key={srv.id || idx} className="service-card clay-card clay-raised">
                 <div className="service-icon-box">
-                  {srv.icon}
+                  {renderDynamicIcon(srv.icon || 'Globe', 24)}
                 </div>
-                <h3>{srv.title}</h3>
-                <p>{srv.desc}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '12px 0 6px 0' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>{srv.title}</h3>
+                  {srv.starting_price && (
+                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--accent-primary)', background: 'var(--clay-surface-recessed)', padding: '2px 8px', borderRadius: '8px' }}>
+                      From {srv.starting_price}
+                    </span>
+                  )}
+                </div>
+                <p>{srv.description}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* 3. WHY CHOOSE US */}
+        {/* ========================================================= */}
+        {/* 3. TARGET AUDIENCES SECTION */}
+        {/* ========================================================= */}
+        {audiencesList.length > 0 && (
+          <section className="web-audiences-section" style={{ marginTop: '48px' }}>
+            <div className="web-section-header">
+              <h2>Tailored Solutions for Every Business</h2>
+              <p>We build websites customized specifically to your industry and business goals.</p>
+            </div>
+
+            <div className="services-grid">
+              {audiencesList.map((aud) => (
+                <div key={aud.id} className="service-card clay-card">
+                  <div className="service-icon-box" style={{ background: 'var(--accent-gradient)', color: '#fff' }}>
+                    {renderDynamicIcon(aud.icon || 'UserCheck', 22)}
+                  </div>
+                  <h3 style={{ marginTop: '12px', fontSize: '17px', fontWeight: '800' }}>{aud.title}</h3>
+                  <p>{aud.description}</p>
+                  <ClayButton size="sm" onClick={scrollToForm} style={{ marginTop: '12px', width: '100%', justifyContent: 'center' }}>
+                    <span>{aud.cta || 'Build Website'}</span>
+                    <ArrowRight size={14} />
+                  </ClayButton>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ========================================================= */}
+        {/* 4. WHY CHOOSE US (BENEFITS) */}
+        {/* ========================================================= */}
         <section className="why-us-section">
           <div className="web-section-header">
             <h2>Why Build Your Website With Us?</h2>
@@ -380,20 +386,22 @@ export default function WebsiteServices() {
 
           <div className="why-grid">
             {whyUsList.map((item, idx) => (
-              <div key={idx} className="why-card clay-card">
+              <div key={item.id || idx} className="why-card clay-card">
                 <div className="why-icon">
-                  {item.icon}
+                  {renderDynamicIcon(item.icon || 'Zap', 20)}
                 </div>
                 <div>
                   <h4>{item.title}</h4>
-                  <p>{item.desc}</p>
+                  <p>{item.description}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* 4. PORTFOLIO SECTION */}
+        {/* ========================================================= */}
+        {/* 5. PORTFOLIO SECTION */}
+        {/* ========================================================= */}
         <section className="web-portfolio-section" ref={portfolioRef}>
           <div className="web-section-header">
             <h2>Featured Portfolio Builds</h2>
@@ -401,7 +409,7 @@ export default function WebsiteServices() {
           </div>
 
           <div className="portfolio-grid">
-            {displayPortfolio.map((item) => (
+            {portfolio.map((item) => (
               <div key={item.id} className="portfolio-card clay-card clay-raised">
                 <div>
                   <div className="portfolio-img-box">
@@ -413,7 +421,10 @@ export default function WebsiteServices() {
                   </div>
 
                   <div style={{ marginTop: '16px' }}>
-                    <ClayBadge style={{ marginBottom: '8px' }}>{item.category || 'Website'}</ClayBadge>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <ClayBadge>{item.category || 'Website'}</ClayBadge>
+                      {item.featured && <ClayBadge style={{ background: 'var(--accent-gradient)', color: '#fff' }}>FEATURED BUILD</ClayBadge>}
+                    </div>
                     <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>{item.project_name}</h3>
                     {item.client_name && <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>Client: {item.client_name}</span>}
                     <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>{item.description}</p>
@@ -422,7 +433,7 @@ export default function WebsiteServices() {
 
                 <div>
                   {item.technologies && (
-                    <div className="portfolio-tech-tags">
+                    <div className="portfolio-tech-tags" style={{ marginTop: '14px' }}>
                       {(Array.isArray(item.technologies) ? item.technologies : String(item.technologies).split(',')).map((tech, i) => (
                         <span key={i} className="clay-pill" style={{ fontSize: '11px', padding: '4px 10px', background: 'var(--clay-surface-recessed)' }}>
                           {tech.trim()}
@@ -449,7 +460,9 @@ export default function WebsiteServices() {
           </div>
         </section>
 
-        {/* 5. PRICING PACKAGES */}
+        {/* ========================================================= */}
+        {/* 6. PRICING PACKAGES SECTION */}
+        {/* ========================================================= */}
         <section className="web-packages-section">
           <div className="web-section-header">
             <h2>Affordable Web Development Packages</h2>
@@ -457,7 +470,7 @@ export default function WebsiteServices() {
           </div>
 
           <div className="packages-grid">
-            {displayPackages.map((pkg) => (
+            {packages.map((pkg) => (
               <div key={pkg.id} className={`package-card clay-card clay-raised ${pkg.featured ? 'featured-pkg' : ''}`}>
                 <div>
                   {pkg.featured && (
@@ -473,7 +486,7 @@ export default function WebsiteServices() {
                   </div>
 
                   <ul className="pkg-features">
-                    {(Array.isArray(pkg.features) ? pkg.features : String(pkg.features).split('\n')).map((ft, i) => (
+                    {(Array.isArray(pkg.features) ? pkg.features : String(pkg.features || '').split('\n')).map((ft, i) => (
                       <li key={i}>
                         <CheckCircle2 size={16} className="check-icon" />
                         <span>{ft.trim()}</span>
@@ -494,7 +507,7 @@ export default function WebsiteServices() {
                     onClick={scrollToForm}
                     style={{ width: '100%', justifyContent: 'center' }}
                   >
-                    <span>Choose {pkg.name}</span>
+                    <span>{pkg.cta_text || `Choose ${pkg.name}`}</span>
                     <ArrowRight size={16} />
                   </ClayButton>
                 </div>
@@ -503,24 +516,105 @@ export default function WebsiteServices() {
           </div>
         </section>
 
-        {/* 6. WEBSITE REQUIREMENTS FORM */}
-        <section className="web-form-section" ref={formRef} id="request-form">
+        {/* ========================================================= */}
+        {/* 7. HOW IT WORKS / PROCESS STEPS */}
+        {/* ========================================================= */}
+        {processSteps.length > 0 && (
+          <section className="web-process-section" style={{ marginTop: '48px' }}>
+            <div className="web-section-header">
+              <h2>How It Works - Simple 5-Step Process</h2>
+              <p>From initial concept to final live deployment, we handle every step seamlessly.</p>
+            </div>
+
+            <div className="services-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+              {processSteps.map((pr) => (
+                <div key={pr.id} className="service-card clay-card" style={{ position: 'relative' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '900', color: 'var(--accent-primary)', marginBottom: '8px' }}>
+                    {pr.step_number}
+                  </div>
+                  <h3 style={{ fontSize: '17px', fontWeight: '800', margin: '0 0 6px 0' }}>{pr.title}</h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>{pr.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ========================================================= */}
+        {/* 8. FAQS SECTION */}
+        {/* ========================================================= */}
+        {faqs.length > 0 && (
+          <section className="web-faqs-section" style={{ marginTop: '48px' }}>
+            <div className="web-section-header">
+              <h2>Frequently Asked Questions</h2>
+              <p>Got questions about website building, domain, hosting, or support? Find quick answers below.</p>
+            </div>
+
+            <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {faqs.map((fq) => (
+                <div
+                  key={fq.id}
+                  className="clay-card"
+                  onClick={() => toggleFaq(fq.id)}
+                  style={{ padding: '18px 24px', cursor: 'pointer', transition: 'var(--transition-clay)' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)' }}>
+                      {fq.question}
+                    </h4>
+                    {openFaqId === fq.id ? <ChevronUp size={18} color="var(--accent-primary)" /> : <ChevronDown size={18} color="var(--text-muted)" />}
+                  </div>
+                  {openFaqId === fq.id && (
+                    <p style={{ marginTop: '12px', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6', paddingTop: '10px', borderTop: 'var(--clay-border-subtle)' }}>
+                      {fq.answer}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ========================================================= */}
+        {/* 9. WEBSITE REQUIREMENTS FORM & WHATSAPP CTA */}
+        {/* ========================================================= */}
+        <section className="web-form-section" ref={formRef} id="request-form" style={{ marginTop: '48px' }}>
           <ClayCard elevated className="form-card">
             <div className="web-section-header" style={{ marginBottom: '24px' }}>
               <ClayBadge style={{ marginBottom: '8px' }}>
                 <Send size={14} color="var(--accent-primary)" />
                 <span>Get Started Today</span>
               </ClayBadge>
-              <h2>Request Your Custom Website</h2>
-              <p>Fill out the form below with your project requirements. We will review your details and contact you with a personalized plan and quotation.</p>
+              <h2>{formSettings.heading || 'Request Your Custom Website'}</h2>
+              <p>{formSettings.description || 'Fill out the form below with your project requirements. We will review your details and contact you with a personalized plan and quotation.'}</p>
             </div>
+
+            {/* DIRECT WHATSAPP ACTION CARD */}
+            {contactSettings.whatsapp_number && (
+              <div className="clay-card" style={{ padding: '16px 20px', background: 'var(--clay-surface-recessed)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)' }}>Need an Immediate Response?</h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>Chat directly with our lead developer on WhatsApp now.</p>
+                </div>
+                <a
+                  href={`https://wa.me/${contactSettings.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(contactSettings.whatsapp_template || 'Hello Webspedia!')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="clay-button-primary"
+                  style={{ textDecoration: 'none', background: '#25D366', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: 'var(--radius-pill)', fontWeight: '800', fontSize: '13px' }}
+                >
+                  <MessageCircle size={16} />
+                  <span>{contactSettings.cta_text || 'Chat on WhatsApp'}</span>
+                </a>
+              </div>
+            )}
 
             {submitted ? (
               <div className="success-banner-clay">
                 <CheckCircle2 size={48} color="var(--color-success)" />
                 <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>Request Submitted Successfully!</h3>
                 <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)' }}>
-                  Thank you, <strong>{form.full_name}</strong>! Your website development request has been received. We will contact you via {form.preferred_contact_method} shortly.
+                  {formSettings.success_message || 'Thank you! Your website request has been received.'}
                 </p>
                 <ClayButton size="sm" onClick={() => setSubmitted(false)} style={{ marginTop: '12px' }}>
                   Submit Another Request
@@ -584,17 +678,10 @@ export default function WebsiteServices() {
                       value={form.website_type}
                       onChange={e => setForm({ ...form, website_type: e.target.value })}
                     >
-                      <option value="Business">Business Website</option>
-                      <option value="Portfolio">Portfolio Website</option>
-                      <option value="Landing Page">Landing Page</option>
-                      <option value="E-commerce">E-commerce Website</option>
-                      <option value="Restaurant">Restaurant Website</option>
-                      <option value="Education">Education Website</option>
-                      <option value="Real Estate">Real Estate Website</option>
-                      <option value="Blog">Blog Website</option>
-                      <option value="Startup">Startup Website</option>
-                      <option value="Custom Web Application">Custom Web Application</option>
-                      <option value="Other">Other</option>
+                      {servicesList.map(s => (
+                        <option key={s.id} value={s.title}>{s.title}</option>
+                      ))}
+                      <option value="Other">Other Custom Build</option>
                     </select>
                   </div>
 
@@ -718,7 +805,7 @@ export default function WebsiteServices() {
                 </div>
 
                 <ClayButton variant="primary" type="submit" disabled={submitting} style={{ width: '100%', justifyContent: 'center', marginTop: '10px', padding: '14px' }}>
-                  <span>{submitting ? 'Submitting Request...' : 'Submit Website Request'}</span>
+                  <span>{submitting ? 'Submitting Request...' : (formSettings.submit_btn_text || 'Submit Website Request')}</span>
                   <Send size={16} />
                 </ClayButton>
               </form>
