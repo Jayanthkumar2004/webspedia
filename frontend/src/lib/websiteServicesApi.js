@@ -281,6 +281,9 @@ export const INITIAL_SEO_SETTINGS = {
   robots_setting: 'index, follow'
 };
 
+// Cache of tables that do not exist yet in Supabase PostgREST schema
+const missingTablesSet = new Set();
+
 // Local storage helper fallback
 function getLocal(key, defaultVal) {
   try {
@@ -297,19 +300,30 @@ function setLocal(key, val) {
   } catch (err) {}
 }
 
-// Helper to query Supabase or fallback
+// Helper to query Supabase or fallback cleanly without red console error spam
 async function fetchGeneric(table, localKey, defaultVal) {
+  if (missingTablesSet.has(table)) {
+    return getLocal(localKey, defaultVal);
+  }
+
   try {
     const { data, error } = await supabase.from(table).select('*');
-    if (!error && data && data.length > 0) {
-      // Sort if display_order exists
+    if (error) {
+      if (error.code === 'PGRST204' || error.message?.includes('Could not find the table') || error.status === 404) {
+        missingTablesSet.add(table);
+      }
+      return getLocal(localKey, defaultVal);
+    }
+    if (data && data.length > 0) {
       if (data[0].display_order !== undefined) {
         data.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
       }
       setLocal(localKey, data);
       return data;
     }
-  } catch (e) {}
+  } catch (e) {
+    missingTablesSet.add(table);
+  }
   return getLocal(localKey, defaultVal);
 }
 
