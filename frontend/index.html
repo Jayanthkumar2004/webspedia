@@ -6,9 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>webspedia</title>
     <script>
+      // Guard performance.getEntriesByType to prevent extension et.reportAllChanges startTime crashes
+      (function() {
+        try {
+          if (window.performance && typeof window.performance.getEntriesByType === 'function') {
+            var origGetEntries = window.performance.getEntriesByType.bind(window.performance);
+            window.performance.getEntriesByType = function(type) {
+              var res = origGetEntries(type);
+              if (type === 'navigation' && (!res || res.length === 0)) {
+                return [{ startTime: 0, responseStart: 0, domInteractive: 0, domContentLoadedEventStart: 0, domComplete: 0, loadEventStart: 0 }];
+              }
+              return res;
+            };
+          }
+        } catch (err) {}
+      })();
+
       // Filter out third-party browser extension noise (e.g. WhatsApp Web extensions, chrome content scripts)
       window.addEventListener('error', function(e) {
-        var msg = (e && e.message) || '';
+        var msg = (e && (e.message || (e.error && e.error.message))) || '';
         if (
           msg.indexOf('startTime') !== -1 ||
           msg.indexOf('reportAllChanges') !== -1 ||
