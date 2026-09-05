@@ -32,6 +32,7 @@ export default function Navbar() {
 
       if (currentUser) {
         fetchAvatar(currentUser);
+        updateLastSeen(currentUser);
       } else {
         setLoadingAvatar(false);
       }
@@ -42,6 +43,17 @@ export default function Navbar() {
     const storedRole = localStorage.getItem('role');
     if (storedRole) setRole(storedRole);
   }, []);
+
+  const updateLastSeen = async (user) => {
+    try {
+      await supabase
+        .from('profiles')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('id', user.id);
+    } catch (e) {
+      console.warn("Update last_seen error:", e);
+    }
+  };
 
   const fetchAvatar = async (user) => {
     const { data: profile } = await supabase

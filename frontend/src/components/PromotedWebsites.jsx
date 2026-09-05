@@ -23,7 +23,16 @@ export default function PromotedWebsites() {
         console.warn('Promoted websites table check:', error.message);
         setWebsites([]);
       } else {
-        setWebsites(data || []);
+        const unique = [];
+        const seen = new Set();
+        (data || []).forEach(item => {
+          const key = (item.title || item.url || '').trim().toLowerCase();
+          if (key && !seen.has(key)) {
+            seen.add(key);
+            unique.push(item);
+          }
+        });
+        setWebsites(unique);
       }
     } catch (err) {
       console.error(err);

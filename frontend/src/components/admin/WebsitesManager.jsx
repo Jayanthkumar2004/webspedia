@@ -43,8 +43,18 @@ export default function WebsitesManager() {
 
       if (error) {
         console.warn('Fetch promoted websites error:', error.message);
+      } else {
+        const unique = [];
+        const seen = new Set();
+        (data || []).forEach(item => {
+          const key = (item.title || item.url || '').trim().toLowerCase();
+          if (key && !seen.has(key)) {
+            seen.add(key);
+            unique.push(item);
+          }
+        });
+        setWebsites(unique);
       }
-      setWebsites(data || []);
     } catch (err) {
       console.error(err);
     }

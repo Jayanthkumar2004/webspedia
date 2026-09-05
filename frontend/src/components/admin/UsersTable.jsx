@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Users, ShieldAlert, ShieldCheck, Trash2, Ban } from 'lucide-react';
+import { Users, ShieldAlert, ShieldCheck, Trash2, Ban, Clock } from 'lucide-react';
 import '../../styles/UsersTable.css';
 
 export default function UsersTable() {
@@ -70,6 +70,29 @@ export default function UsersTable() {
     fetchUsers();
   };
 
+  const formatLastSeen = (timestamp) => {
+    if (!timestamp) return "Never";
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return "Never";
+
+    const now = new Date();
+    const diffMinutes = Math.floor((now - date) / (1000 * 60));
+
+    if (diffMinutes < 5) {
+      return <span style={{ color: "#10b981", fontWeight: "800", display: "inline-flex", alignItems: "center", gap: "4px" }}>● Online</span>;
+    }
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h ago`;
+
+    return date.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   return (
     <div className="users-table-card clay-card">
       <div className="users-header">
@@ -77,7 +100,7 @@ export default function UsersTable() {
           <Users size={22} className="header-icon" />
           <div>
             <h2>User Management</h2>
-            <p>Monitor user accounts, roles, and active/banned status</p>
+            <p>Monitor user accounts, roles, last active status, and active/banned permissions</p>
           </div>
         </div>
 
@@ -93,6 +116,7 @@ export default function UsersTable() {
               <th>User Profile</th>
               <th>Email</th>
               <th>Status</th>
+              <th>Last Active / Seen</th>
               <th>Joined Date</th>
               <th>Actions</th>
             </tr>
@@ -101,11 +125,12 @@ export default function UsersTable() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" className="table-message">Loading users...</td>
+                <td colSpan="6" className="table-message">Loading users...</td>
               </tr>
             ) : users.length > 0 ? (
               users.map(user => {
                 const isBanned = !!(user.is_banned || user.role === 'BANNED' || bannedMap[user.id]);
+                const lastActiveTime = user.last_seen || user.updated_at || user.created_at;
 
                 return (
                   <tr key={user.id}>
@@ -144,6 +169,13 @@ export default function UsersTable() {
                     </td>
 
                     <td>
+                      <span className="date-text" style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontWeight: "700" }}>
+                        <Clock size={13} color="var(--accent-primary)" />
+                        {formatLastSeen(lastActiveTime)}
+                      </span>
+                    </td>
+
+                    <td>
                       <span className="date-text">
                         {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                       </span>
@@ -175,7 +207,7 @@ export default function UsersTable() {
               })
             ) : (
               <tr>
-                <td colSpan="5" className="table-message">No registered users found.</td>
+                <td colSpan="6" className="table-message">No registered users found.</td>
               </tr>
             )}
           </tbody>

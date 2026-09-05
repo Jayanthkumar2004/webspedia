@@ -32,7 +32,16 @@ export default function BannersManager() {
       .order('position', { ascending: true });
 
     if (!error) {
-      setBanners(data || []);
+      const unique = [];
+      const seen = new Set();
+      (data || []).forEach(b => {
+        const key = (b.title || '').trim().toLowerCase();
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          unique.push(b);
+        }
+      });
+      setBanners(unique);
     }
     setLoading(false);
   };
