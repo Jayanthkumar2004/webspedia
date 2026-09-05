@@ -36,7 +36,8 @@ export default function Home() {
     fetchTools();
   }, []);
 
-  const categories = [
+  // Default fallback categories
+  const defaultCategories = [
     'All',
     'Writing',
     'Design',
@@ -49,6 +50,31 @@ export default function Home() {
     'Education',
     'Business'
   ];
+
+  // Dynamic category pills generated from existing database tools + defaults
+  const categories = ['All'];
+  const categoryMap = new Map();
+
+  // First add default categories to preserve nice capitalization
+  defaultCategories.slice(1).forEach(c => {
+    categoryMap.set(c.toLowerCase(), c);
+  });
+
+  // Then add any custom categories dynamically from database tools
+  tools.forEach(t => {
+    if (t.category && typeof t.category === 'string') {
+      const trimmed = t.category.trim();
+      const lower = trimmed.toLowerCase();
+      if (trimmed && !categoryMap.has(lower)) {
+        const formatted = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+        categoryMap.set(lower, formatted);
+      }
+    }
+  });
+
+  categoryMap.forEach(displayVal => {
+    categories.push(displayVal);
+  });
 
   const filteredTools = tools
     .map(tool => {
@@ -65,7 +91,11 @@ export default function Home() {
     .filter(Boolean)
     .sort((a, b) => b.score - a.score)
     .map(item => item.tool)
-    .filter(tool => category === 'All' || tool.category === category);
+    .filter(tool => {
+      if (category === 'All') return true;
+      if (!tool.category) return false;
+      return tool.category.trim().toLowerCase() === category.trim().toLowerCase();
+    });
 
   const scrollLeft = () => {
     if (scrollRef.current) {
