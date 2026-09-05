@@ -13,6 +13,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
+import { sanitizeImageUrl, handleImageError, DEFAULT_PORTFOLIO_IMAGE } from '../../utils/placeholder';
 
 export default function WebsitePortfolioManager() {
   const [portfolio, setPortfolio] = useState([]);
@@ -97,12 +98,14 @@ export default function WebsitePortfolioManager() {
 
     const techArray = technologies.split(',').map(t => t.trim()).filter(Boolean);
 
+    const cleanThumbnail = sanitizeImageUrl(thumbnailUrl.trim(), null);
+
     const payload = {
       project_name: projectName.trim(),
       description: description.trim(),
       category,
       client_name: clientName.trim() || null,
-      thumbnail_url: thumbnailUrl.trim() || null,
+      thumbnail_url: cleanThumbnail,
       live_url: liveUrl.trim() || null,
       technologies: techArray,
       featured,
@@ -238,7 +241,12 @@ export default function WebsitePortfolioManager() {
             <ClayCard key={item.id} elevated style={{ padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "14px" }}>
               <div>
                 <div style={{ width: "100%", height: "160px", borderRadius: "12px", overflow: "hidden", background: "var(--clay-surface-recessed)", marginBottom: "14px", position: "relative" }}>
-                  <img src={item.thumbnail_url || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80"} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img
+                    src={sanitizeImageUrl(item.thumbnail_url, DEFAULT_PORTFOLIO_IMAGE)}
+                    alt=""
+                    onError={(e) => handleImageError(e, DEFAULT_PORTFOLIO_IMAGE)}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
 
                   <div style={{ position: "absolute", top: "10px", right: "10px", display: "flex", gap: "6px" }}>
                     {item.featured && (

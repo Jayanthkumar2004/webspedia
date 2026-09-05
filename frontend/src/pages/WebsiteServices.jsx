@@ -31,6 +31,7 @@ import {
   Calendar,
   DollarSign
 } from 'lucide-react';
+import { sanitizeImageUrl, handleImageError, DEFAULT_PORTFOLIO_IMAGE } from '../utils/placeholder';
 import '../styles/website_services.css';
 
 export default function WebsiteServices() {
@@ -404,7 +405,11 @@ export default function WebsiteServices() {
               <div key={item.id} className="portfolio-card clay-card clay-raised">
                 <div>
                   <div className="portfolio-img-box">
-                    <img src={item.thumbnail_url || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80"} alt={item.project_name} />
+                    <img
+                      src={sanitizeImageUrl(item.thumbnail_url, DEFAULT_PORTFOLIO_IMAGE)}
+                      alt={item.project_name}
+                      onError={(e) => handleImageError(e, DEFAULT_PORTFOLIO_IMAGE)}
+                    />
                   </div>
 
                   <div style={{ marginTop: '16px' }}>
