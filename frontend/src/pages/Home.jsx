@@ -6,7 +6,7 @@ import PromotedWebsites from '../components/PromotedWebsites';
 import FeedbackSection from '../components/FeedbackSection';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
-import { Search, ChevronLeft, ChevronRight, Sparkles, Cpu, Code, PenTool, Flame, Layers } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Sparkles, Cpu, Code, PenTool, Flame, Layers, X, RotateCcw } from 'lucide-react';
 import '../styles/home.css';
 
 export default function Home() {
@@ -76,17 +76,78 @@ export default function Home() {
     categories.push(displayVal);
   });
 
+  const toolsSectionRef = useRef(null);
+
+  const handleExploreClick = () => {
+    if (toolsSectionRef.current) {
+      toolsSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    handleExploreClick();
+  };
+
+  const clearSearch = () => {
+    setSearch('');
+  };
+
+  const resetAllFilters = () => {
+    setSearch('');
+    setCategory('All');
+  };
+
   const filteredTools = tools
     .map(tool => {
-      const query = search.toLowerCase().trim();
-      if (!query) return { tool, score: 1 };
+      const rawQuery = search.toLowerCase().trim();
+      if (!rawQuery) return { tool, score: 1 };
+
+      const words = rawQuery.split(/\s+/).filter(Boolean);
+      const title = (tool.title || '').toLowerCase();
+      const categoryStr = (tool.category || '').toLowerCase();
+      const desc = (tool.description || '').toLowerCase();
+      const pricing = (tool.pricing || tool.pricing_type || '').toLowerCase();
+      const urlStr = (tool.tool_url || '').toLowerCase();
+      const tagsStr = Array.isArray(tool.tags) ? tool.tags.join(' ').toLowerCase() : (tool.tags || '').toLowerCase();
 
       let score = 0;
-      if (tool.title?.toLowerCase().includes(query)) score += 3;
-      if (tool.category?.toLowerCase().includes(query)) score += 2;
-      if (tool.description?.toLowerCase().includes(query)) score += 1;
+      let matchedCount = 0;
 
-      return score > 0 ? { tool, score } : null;
+      // Exact title match bonus
+      if (title === rawQuery) score += 20;
+
+      words.forEach(word => {
+        let matched = false;
+
+        if (title.includes(word)) {
+          score += title.startsWith(word) ? 10 : 6;
+          matched = true;
+        }
+
+        if (categoryStr.includes(word)) {
+          score += categoryStr === word ? 8 : 4;
+          matched = true;
+        }
+
+        if (desc.includes(word)) {
+          score += 3;
+          matched = true;
+        }
+
+        if (pricing.includes(word) || tagsStr.includes(word) || urlStr.includes(word)) {
+          score += 3;
+          matched = true;
+        }
+
+        if (matched) matchedCount++;
+      });
+
+      if (matchedCount === 0) return null;
+
+      if (matchedCount === words.length) score += 10;
+
+      return { tool, score };
     })
     .filter(Boolean)
     .sort((a, b) => b.score - a.score)
@@ -132,21 +193,40 @@ export default function Home() {
             </p>
 
             {/* PROFESSIONAL SEARCH CONTAINER */}
-            <div className="search-container">
+            <form className="search-container" onSubmit={handleSearchSubmit}>
               <div className="search-input-wrapper clay-inset">
                 <Search className="search-icon" size={18} />
                 <input
                   type="text"
                   className="search-input"
-                  placeholder="Search AI tools by name, category..."
+                  placeholder="Search AI tools by title, category, feature..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    style={{
+                      border: 'none',
+                      background: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      marginRight: '6px'
+                    }}
+                    title="Clear search"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
               </div>
-              <button className="search-btn clay-button-primary" type="button">
+              <button className="search-btn clay-button-primary" type="submit" onClick={handleExploreClick}>
                 <span>Explore</span>
               </button>
-            </div>
+            </form>
 
             {/* PROFESSIONAL METRIC STATS ROW */}
             <div className="hero-stats-row">
@@ -219,7 +299,7 @@ export default function Home() {
               {categories.map(cat => (
                 <button
                   key={cat}
-                  className={`category-pill clay-pill ${category === cat ? 'active' : ''}`}
+                  className={`category-pill clay-pill ${category.trim().toLowerCase() === cat.trim().toLowerCase() ? 'active' : ''}`}
                   onClick={() => setCategory(cat)}
                   type="button"
                 >
@@ -235,13 +315,26 @@ export default function Home() {
         </section>
 
         {/* MAIN TOOL GRID */}
-        <section className="tools-section">
-          <div className="section-header">
-            <div className="section-title-group">
+        <section className="tools-section" ref={toolsSectionRef}>
+          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div className="section-title-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <Flame size={22} className="section-icon" color="var(--accent-primary)" />
               <h2>Explore AI Tools Catalog</h2>
+              {search.trim() && (
+                <span className="clay-pill" style={{ fontSize: '13px', color: 'var(--accent-primary)', fontWeight: '700', padding: '4px 12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  Query: "{search.trim()}"
+                  <X size={13} style={{ cursor: 'pointer' }} onClick={clearSearch} title="Clear search" />
+                </span>
+              )}
             </div>
-            <span className="clay-pill count-badge">{filteredTools.length} Tools</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {(search || category !== 'All') && (
+                <button className="clay-pill" onClick={resetAllFilters} type="button" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)' }}>
+                  <RotateCcw size={12} /> Reset Filters
+                </button>
+              )}
+              <span className="clay-pill count-badge">{filteredTools.length} Tools</span>
+            </div>
           </div>
 
           <div className="tools-grid">
@@ -254,8 +347,19 @@ export default function Home() {
                 <ToolCard key={tool.id} tool={tool} />
               ))
             ) : (
-              <div className="empty-state clay-surface">
-                <p>No matching tools found. Try adjusting your search query or category filter.</p>
+              <div className="empty-state clay-surface" style={{ padding: '48px 24px', textAlign: 'center', width: '100%', gridColumn: '1 / -1', borderRadius: '24px' }}>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>No matching AI tools found</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px', maxWidth: '440px', margin: '0 auto 20px' }}>
+                  {search ? `No tools matched your search query "${search}". Try checking for typos or resetting your filters.` : 'No tools available in this category.'}
+                </p>
+                <button
+                  className="clay-button-primary"
+                  onClick={resetAllFilters}
+                  type="button"
+                  style={{ padding: '10px 24px', borderRadius: '9999px', fontSize: '14px', fontWeight: '800' }}
+                >
+                  Reset Search & Filters
+                </button>
               </div>
             )}
           </div>
