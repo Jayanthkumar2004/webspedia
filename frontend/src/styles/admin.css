@@ -114,8 +114,10 @@
 /* MAIN CONTENT AREA */
 .admin-main {
   flex: 1;
-  padding: 36px 44px;
+  min-width: 0;
+  padding: 32px 36px;
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--bg-main);
   color: var(--text-primary);
   width: 100%;
@@ -219,8 +221,19 @@
   color: var(--text-muted);
 }
 
-/* SMARTPHONE MOBILE BREAKPOINTS (<= 768px) */
-@media (max-width: 768px) {
+/* TABLET & MEDIUM RESPONSIVE (<= 1150px) */
+@media (max-width: 1150px) {
+  :root {
+    --admin-sidebar-width: 230px;
+  }
+
+  .admin-main {
+    padding: 24px 20px;
+  }
+}
+
+/* NARROW VIEWPORTS & SPLIT-SCREEN DEVTOOLS (<= 960px) */
+@media (max-width: 960px) {
   .admin-layout {
     flex-direction: column !important;
     width: 100% !important;
