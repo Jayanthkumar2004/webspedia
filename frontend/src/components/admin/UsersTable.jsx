@@ -130,7 +130,7 @@ export default function UsersTable() {
             ) : users.length > 0 ? (
               users.map(user => {
                 const isBanned = !!(user.is_banned || user.role === 'BANNED' || bannedMap[user.id]);
-                const lastActiveTime = user.last_seen || user.updated_at || user.created_at;
+                const lastActiveTime = user.last_seen || user.created_at;
 
                 return (
                   <tr key={user.id}>
