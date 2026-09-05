@@ -58,6 +58,7 @@
 
 .tools-table {
   width: 100%;
+  min-width: 850px;
   border-collapse: collapse;
   text-align: left;
 }

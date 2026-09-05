@@ -292,18 +292,18 @@ export default function WebsiteRequestsManager() {
           <p>No website development requests found matching your filter.</p>
         </ClayCard>
       ) : (
-        <div className="table-wrapper clay-card" style={{ padding: 0, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", textAlign: "left" }}>
+        <div className="table-wrapper clay-card" style={{ padding: 0, overflowX: "auto", width: "100%" }}>
+          <table style={{ width: "100%", minWidth: "950px", borderCollapse: "collapse", fontSize: "13px", textAlign: "left" }}>
             <thead>
               <tr style={{ background: "var(--clay-surface-raised)", borderBottom: "var(--clay-border-subtle)" }}>
-                <th style={{ padding: "14px 16px", fontWeight: "800" }}>Customer / Business</th>
-                <th style={{ padding: "14px 16px", fontWeight: "800" }}>Website Type</th>
-                <th style={{ padding: "14px 16px", fontWeight: "800" }}>Budget</th>
-                <th style={{ padding: "14px 16px", fontWeight: "800" }}>Status</th>
-                <th style={{ padding: "14px 16px", fontWeight: "800" }}>Priority</th>
-                <th style={{ padding: "14px 16px", fontWeight: "800" }}>Quoted Price</th>
-                <th style={{ padding: "14px 16px", fontWeight: "800" }}>Date</th>
-                <th style={{ padding: "14px 16px", fontWeight: "800", textAlign: "right" }}>Actions</th>
+                <th style={{ padding: "14px 16px", fontWeight: "800", minWidth: "220px" }}>Customer / Business</th>
+                <th style={{ padding: "14px 16px", fontWeight: "800", minWidth: "120px" }}>Website Type</th>
+                <th style={{ padding: "14px 16px", fontWeight: "800", minWidth: "120px" }}>Budget</th>
+                <th style={{ padding: "14px 16px", fontWeight: "800", minWidth: "120px" }}>Status</th>
+                <th style={{ padding: "14px 16px", fontWeight: "800", minWidth: "100px" }}>Priority</th>
+                <th style={{ padding: "14px 16px", fontWeight: "800", minWidth: "110px" }}>Quoted Price</th>
+                <th style={{ padding: "14px 16px", fontWeight: "800", minWidth: "100px" }}>Date</th>
+                <th style={{ padding: "14px 16px", fontWeight: "800", textAlign: "right", minWidth: "160px" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -313,41 +313,41 @@ export default function WebsiteRequestsManager() {
 
                 return (
                   <tr key={req.id} style={{ borderBottom: "var(--clay-border-subtle)" }}>
-                    <td style={{ padding: "14px 16px" }}>
+                    <td style={{ padding: "14px 16px", minWidth: "220px" }}>
                       <div style={{ fontWeight: "800", color: "var(--text-primary)" }}>{req.full_name}</div>
                       <div style={{ fontSize: "12px", color: "var(--accent-primary)", fontWeight: "700" }}>{req.business_name}</div>
-                      <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{req.email} • {req.phone}</div>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>{req.email} • {req.phone}</div>
                     </td>
 
-                    <td style={{ padding: "14px 16px" }}>
+                    <td style={{ padding: "14px 16px", whiteSpace: "nowrap" }}>
                       <ClayBadge style={{ background: "var(--clay-surface-recessed)", fontWeight: "700" }}>
                         {req.website_type}
                       </ClayBadge>
                     </td>
 
-                    <td style={{ padding: "14px 16px", fontWeight: "700", color: "var(--text-secondary)" }}>
+                    <td style={{ padding: "14px 16px", fontWeight: "700", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
                       {req.budget || 'Not specified'}
                     </td>
 
-                    <td style={{ padding: "14px 16px" }}>
+                    <td style={{ padding: "14px 16px", whiteSpace: "nowrap" }}>
                       <ClayBadge style={{ background: st.bg, color: st.color, fontWeight: "800" }}>
                         {req.status}
                       </ClayBadge>
                     </td>
 
-                    <td style={{ padding: "14px 16px" }}>
+                    <td style={{ padding: "14px 16px", whiteSpace: "nowrap" }}>
                       {getPriorityBadge(req.priority)}
                     </td>
 
-                    <td style={{ padding: "14px 16px", fontWeight: "800", color: req.quoted_price ? "var(--color-success)" : "var(--text-muted)" }}>
+                    <td style={{ padding: "14px 16px", fontWeight: "800", color: req.quoted_price ? "var(--color-success)" : "var(--text-muted)", whiteSpace: "nowrap" }}>
                       {req.quoted_price ? `₹${Number(req.quoted_price).toLocaleString()}` : 'Not set'}
                     </td>
 
-                    <td style={{ padding: "14px 16px", fontSize: "12px", color: "var(--text-muted)" }}>
+                    <td style={{ padding: "14px 16px", fontSize: "12px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                       {new Date(req.created_at).toLocaleDateString()}
                     </td>
 
-                    <td style={{ padding: "14px 16px", textAlign: "right" }}>
+                    <td style={{ padding: "14px 16px", textAlign: "right", minWidth: "160px", whiteSpace: "nowrap" }}>
                       <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "6px" }}>
                         {/* QUICK PHONE CALL */}
                         <a
