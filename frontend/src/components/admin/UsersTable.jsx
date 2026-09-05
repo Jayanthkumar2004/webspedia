@@ -70,26 +70,28 @@ export default function UsersTable() {
     fetchUsers();
   };
 
-  const formatLastSeen = (timestamp) => {
-    if (!timestamp) return "Never";
+  const formatLastSeen = (lastSeenTime, createdAtTime) => {
+    if (!lastSeenTime && !createdAtTime) return "Offline";
+
+    const timestamp = lastSeenTime || createdAtTime;
     const date = new Date(timestamp);
-    if (isNaN(date.getTime())) return "Never";
+    if (isNaN(date.getTime())) return "Offline";
 
     const now = new Date();
     const diffMinutes = Math.floor((now - date) / (1000 * 60));
 
-    if (diffMinutes < 5) {
+    // Show Online ONLY if last_seen was updated within the last 2 minutes
+    if (lastSeenTime && diffMinutes >= 0 && diffMinutes <= 2) {
       return <span style={{ color: "#10b981", fontWeight: "800", display: "inline-flex", alignItems: "center", gap: "4px" }}>● Online</span>;
     }
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+
+    if (diffMinutes < 60) return `${Math.max(1, diffMinutes)}m ago`;
     if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h ago`;
 
-    return date.toLocaleDateString('en-IN', {
+    return date.toLocaleDateString('en-US', {
+      month: 'numeric',
       day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+      year: 'numeric'
     });
   };
 
@@ -171,7 +173,7 @@ export default function UsersTable() {
                     <td>
                       <span className="date-text" style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontWeight: "700" }}>
                         <Clock size={13} color="var(--accent-primary)" />
-                        {formatLastSeen(lastActiveTime)}
+                        {formatLastSeen(user.last_seen, user.created_at)}
                       </span>
                     </td>
 
