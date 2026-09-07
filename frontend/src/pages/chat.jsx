@@ -15,7 +15,8 @@ import {
   UserX,
   X,
   Mail,
-  Calendar
+  Calendar,
+  Search
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import "../styles/chat.css";
@@ -364,8 +365,18 @@ export default function Chat() {
               </div>
             </div>
 
-            {/* HEADER ACTIONS: CONTACT INFO, DELETE CHAT, DELETE CONTACT */}
+            {/* HEADER ACTIONS: SEARCH ALL USERS, CONTACT INFO, DELETE CHAT, DELETE CONTACT */}
             <div className="chat-header-actions">
+              <button
+                className="clay-btn header-action-btn"
+                onClick={() => navigate("/chats")}
+                type="button"
+                title="Search All Users / All Chats"
+              >
+                <Search size={16} />
+                <span className="btn-label-desktop">Search Users</span>
+              </button>
+
               <button
                 className="clay-btn header-action-btn"
                 onClick={() => setShowContactModal(true)}

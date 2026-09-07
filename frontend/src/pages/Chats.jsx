@@ -335,23 +335,24 @@ export default function Chats() {
                 <h2>Messages ({isSearching ? displayList.length : profiles.length})</h2>
               </div>
 
-              <div className="search-input-wrapper" style={{ position: 'relative' }}>
-                <Search size={16} className="search-icon" />
+              <div className="chats-search-container clay-inset">
+                <Search size={18} className="chats-search-icon" />
                 <input
                   type="text"
-                  className="clay-input"
+                  className="chats-search-input"
                   placeholder="Search users by username or email..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  style={{ paddingLeft: '38px', paddingRight: search ? '32px' : '14px', width: '100%' }}
                 />
                 {search && (
-                  <X
-                    size={14}
-                    style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', cursor: 'pointer', zIndex: 2 }}
+                  <button
+                    type="button"
+                    className="chats-search-clear"
                     onClick={() => setSearch('')}
                     title="Clear search"
-                  />
+                  >
+                    <X size={15} />
+                  </button>
                 )}
               </div>
             </div>
