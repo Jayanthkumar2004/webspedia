@@ -19,7 +19,7 @@
   padding: 48px;
   margin-bottom: 40px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   width: 100%;
   box-sizing: border-box;
 }
@@ -29,6 +29,8 @@
   flex-direction: column;
   align-items: flex-start;
   width: 100%;
+  position: relative;
+  z-index: 20;
 }
 
 .hero-badge {
@@ -92,6 +94,8 @@ input.search-input-field {
   gap: 14px;
   flex-wrap: wrap;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .stat-item-clay {

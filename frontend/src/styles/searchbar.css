@@ -4,9 +4,15 @@
 
 .search-bar-root {
   position: relative;
+  z-index: 100;
   width: 100%;
   max-width: 580px;
   margin-bottom: 24px;
+}
+
+.search-bar-root.is-active-dropdown,
+.search-bar-root:focus-within {
+  z-index: 999;
 }
 
 /* MAIN SEARCH CONTAINER */
@@ -32,6 +38,7 @@
 /* CATEGORY SELECTOR INLINE */
 .search-category-select-wrapper {
   position: relative;
+  z-index: 1000;
   display: flex;
   align-items: center;
   padding-left: 12px;
@@ -84,7 +91,7 @@ body.dark .search-category-select-wrapper {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  z-index: 600;
+  z-index: 9999;
   width: 220px;
   background: var(--bg-navbar);
   backdrop-filter: blur(16px);

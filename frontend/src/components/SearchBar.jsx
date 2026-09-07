@@ -113,7 +113,7 @@ export default function SearchBar({
   const trendingTags = ['ChatGPT', 'Midjourney', 'GitHub Copilot', 'Claude', 'Jasper'];
 
   return (
-    <div className="search-bar-root" ref={wrapperRef}>
+    <div className={`search-bar-root ${isOpen || catDropdownOpen ? 'is-active-dropdown' : ''}`} ref={wrapperRef}>
       <form
         className={`search-container-clay ${isFocused ? 'is-focused' : ''}`}
         onSubmit={handleSubmit}
