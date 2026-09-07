@@ -329,12 +329,17 @@ async function fetchGeneric(table, localKey, defaultVal) {
       }
       return getLocal(localKey, defaultVal);
     }
+    missingTablesSet.delete(table);
     if (data && data.length > 0) {
       if (data[0].display_order !== undefined) {
         data.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
       }
       setLocal(localKey, data);
       return data;
+    } else if (data && data.length === 0) {
+      const local = getLocal(localKey, null);
+      if (local !== null) return local;
+      return [];
     }
   } catch (e) {
     missingTablesSet.add(table);
@@ -830,10 +835,10 @@ export async function updateSeoSettings(payload) {
 // 14. SOCIAL MEDIA LINKS API
 // ---------------------------------------------------------
 export const INITIAL_SOCIAL_LINKS = [
-  { id: 'soc-1', platform: 'Twitter / X', url: 'https://twitter.com', icon: 'Twitter', display_order: 1, is_active: true },
-  { id: 'soc-2', platform: 'LinkedIn', url: 'https://linkedin.com', icon: 'Linkedin', display_order: 2, is_active: true },
-  { id: 'soc-3', platform: 'GitHub', url: 'https://github.com', icon: 'Github', display_order: 3, is_active: true },
-  { id: 'soc-4', platform: 'Instagram', url: 'https://instagram.com', icon: 'Instagram', display_order: 4, is_active: true }
+  { id: 'soc-1', platform: 'Twitter / X', url: 'https://twitter.com', icon: 'Globe', display_order: 1, is_active: true },
+  { id: 'soc-2', platform: 'LinkedIn', url: 'https://linkedin.com', icon: 'Globe', display_order: 2, is_active: true },
+  { id: 'soc-3', platform: 'GitHub', url: 'https://github.com', icon: 'Globe', display_order: 3, is_active: true },
+  { id: 'soc-4', platform: 'Instagram', url: 'https://instagram.com', icon: 'Globe', display_order: 4, is_active: true }
 ];
 
 export async function getSocialLinks() {
@@ -841,16 +846,23 @@ export async function getSocialLinks() {
 }
 
 export async function createSocialLink(item) {
+  missingTablesSet.delete('social_media_links');
   const newItem = { is_active: true, display_order: Date.now(), ...item };
   const cleanPayload = sanitizePayload(newItem);
   try {
     const { data, error } = await supabase.from('social_media_links').insert([cleanPayload]).select();
     if (!error && data && data[0]) {
       const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
-      setLocal('social_links', [...current, data[0]]);
+      const updated = [...current.filter(i => i.id !== newItem.id && i.id !== data[0].id), data[0]];
+      setLocal('social_links', updated);
       return data[0];
     }
-  } catch (e) {}
+    if (error) {
+      console.warn('Supabase createSocialLink error:', error.message);
+    }
+  } catch (e) {
+    console.warn('Exception in createSocialLink:', e);
+  }
   newItem.id = `soc_${Date.now()}`;
   const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
   const updated = [...current, newItem];
@@ -859,12 +871,36 @@ export async function createSocialLink(item) {
 }
 
 export async function updateSocialLink(id, payload) {
+  missingTablesSet.delete('social_media_links');
   try {
+    const cleanPayload = sanitizePayload(payload);
     if (isValidUUID(id)) {
-      const cleanPayload = sanitizePayload(payload);
-      await supabase.from('social_media_links').update(cleanPayload).eq('id', id);
+      const { data, error } = await supabase.from('social_media_links').update(cleanPayload).eq('id', id).select();
+      if (!error && data && data[0]) {
+        const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
+        const updated = current.map(item => item.id === id ? data[0] : item);
+        setLocal('social_links', updated);
+        return data[0];
+      }
+      if (error) {
+        console.warn('Supabase updateSocialLink error:', error.message);
+      }
+    } else {
+      // Seed item or non-UUID id: insert into Supabase DB as a new row so it gets saved to DB
+      const { data, error } = await supabase.from('social_media_links').insert([cleanPayload]).select();
+      if (!error && data && data[0]) {
+        const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
+        const updated = current.map(item => item.id === id ? data[0] : item);
+        setLocal('social_links', updated);
+        return data[0];
+      }
+      if (error) {
+        console.warn('Supabase insert fallback updateSocialLink error:', error.message);
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Exception in updateSocialLink:', e);
+  }
   const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
   setLocal('social_links', updated);
@@ -872,13 +908,20 @@ export async function updateSocialLink(id, payload) {
 }
 
 export async function deleteSocialLink(id) {
+  missingTablesSet.delete('social_media_links');
   try {
     if (isValidUUID(id)) {
-      await supabase.from('social_media_links').delete().eq('id', id);
+      const { error } = await supabase.from('social_media_links').delete().eq('id', id);
+      if (error) {
+        console.warn('Supabase deleteSocialLink error:', error.message);
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Exception in deleteSocialLink:', e);
+  }
   const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
   const updated = current.filter(item => item.id !== id);
   setLocal('social_links', updated);
   return true;
 }
+
