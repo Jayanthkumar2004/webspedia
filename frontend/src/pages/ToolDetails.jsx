@@ -10,6 +10,7 @@ import {
   Send, 
   MessageSquare, 
   Trash2, 
+  Pencil,
   CornerDownRight, 
   Star,
   ChevronRight,
@@ -34,6 +35,12 @@ export default function ToolDetails() {
   const [userRating, setUserRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [saved, setSaved] = useState(false);
+
+  // Edit Review States
+  const [editingId, setEditingId] = useState(null);
+  const [editContent, setEditContent] = useState('');
+  const [editRating, setEditRating] = useState(5);
+  const [editHoverRating, setEditHoverRating] = useState(0);
 
   const [replyBox, setReplyBox] = useState(null);
   const [replyText, setReplyText] = useState("");
@@ -298,10 +305,81 @@ export default function ToolDetails() {
     fetchCommentsAndRatings();
   };
 
+  const startEditing = (comment) => {
+    setEditingId(comment.id);
+    setEditContent(comment.content || '');
+    setEditRating(Number(comment.rating || 5));
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditContent('');
+    setEditRating(5);
+  };
+
+  const saveEdit = async (cid, uid) => {
+    if (!user || user.id !== uid) return;
+    if (!editContent.trim()) return;
+
+    // 1. Update comment content
+    try {
+      await supabase
+        .from('comments')
+        .update({
+          content: editContent.trim(),
+          rating: editRating
+        })
+        .eq('id', cid);
+    } catch (e) {
+      await supabase
+        .from('comments')
+        .update({ content: editContent.trim() })
+        .eq('id', cid);
+    }
+
+    // 2. Update rating in ratings table
+    try {
+      const { data: existingRating } = await supabase
+        .from('ratings')
+        .select('id')
+        .eq('tool_id', id)
+        .eq('user_id', uid)
+        .maybeSingle();
+
+      if (existingRating) {
+        await supabase
+          .from('ratings')
+          .update({ rating: editRating })
+          .eq('id', existingRating.id);
+      } else {
+        await supabase
+          .from('ratings')
+          .insert([{ tool_id: id, user_id: uid, rating: editRating }]);
+      }
+    } catch (e) {
+      console.warn('Ratings update error:', e);
+    }
+
+    setEditingId(null);
+    setEditContent('');
+    fetchCommentsAndRatings();
+  };
+
   const deleteComment = async (cid, uid) => {
     if (user?.id !== uid) return;
+    const confirmDel = window.confirm("Are you sure you want to delete your review?");
+    if (!confirmDel) return;
+
     await supabase.from('comments').delete().eq('id', cid);
     await supabase.from('comments').delete().eq('parent_id', cid);
+
+    // Clean up rating entry for this user and tool
+    try {
+      await supabase.from('ratings').delete().eq('tool_id', id).eq('user_id', uid);
+    } catch (e) {
+      console.warn('Ratings delete warning:', e);
+    }
+
     fetchCommentsAndRatings();
   };
 
@@ -516,7 +594,52 @@ export default function ToolDetails() {
                   </div>
                 </div>
 
-                <p className="review-content-text">{c.content}</p>
+                {editingId === c.id ? (
+                  <div className="edit-review-clay-box" style={{ marginTop: '12px', padding: '14px', background: 'var(--clay-surface-recessed)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div className="star-rating-picker" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)' }}>Edit Rating:</span>
+                      <div className="interactive-stars" style={{ display: 'flex', gap: '4px' }}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            className="star-pick-btn"
+                            onMouseEnter={() => setEditHoverRating(star)}
+                            onMouseLeave={() => setEditHoverRating(0)}
+                            onClick={() => setEditRating(star)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          >
+                            <Star
+                              size={18}
+                              fill={(editHoverRating || editRating) >= star ? "#facc15" : "none"}
+                              color={(editHoverRating || editRating) >= star ? "#facc15" : "var(--text-muted)"}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <textarea
+                      className="clay-input"
+                      rows="3"
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      placeholder="Update your review..."
+                      style={{ width: '100%', resize: 'vertical' }}
+                    />
+
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      <button className="clay-pill" onClick={cancelEditing} type="button">
+                        Cancel
+                      </button>
+                      <button className="clay-button clay-button-primary" onClick={() => saveEdit(c.id, c.user_id)} type="button" style={{ padding: '6px 14px', fontSize: '12px' }}>
+                        Save Changes
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="review-content-text">{c.content}</p>
+                )}
 
                 <div className="review-footer-actions">
                   <button
@@ -559,14 +682,25 @@ export default function ToolDetails() {
                   )}
 
                   {user?.id === c.user_id && (
-                    <button
-                      className="clay-pill action-pill delete-pill"
-                      onClick={() => deleteComment(c.id, c.user_id)}
-                      type="button"
-                    >
-                      <Trash2 size={13} />
-                      <span>Delete</span>
-                    </button>
+                    <>
+                      <button
+                        className="clay-pill action-pill"
+                        onClick={() => startEditing(c)}
+                        type="button"
+                      >
+                        <Pencil size={13} />
+                        <span>Edit</span>
+                      </button>
+
+                      <button
+                        className="clay-pill action-pill delete-pill"
+                        onClick={() => deleteComment(c.id, c.user_id)}
+                        type="button"
+                      >
+                        <Trash2 size={13} />
+                        <span>Delete</span>
+                      </button>
+                    </>
                   )}
                 </div>
 
