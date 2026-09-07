@@ -123,6 +123,7 @@ export default function WebsiteServices() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState('');
+  const [lastWaUrl, setLastWaUrl] = useState('');
 
   useEffect(() => {
     fetchAllServicesData();
@@ -233,7 +234,32 @@ export default function WebsiteServices() {
         console.warn('Supabase insert warning:', insertErr.message);
       }
 
+      // Generate structured WhatsApp message for automatic dispatch
+      const waNumber = (contactSettings?.whatsapp_number || '+919876543210').replace(/\D/g, '');
+      const waMessage = `*New Website Request - Webspedia* 🚀\n\n` +
+        `*Name:* ${form.full_name.trim()}\n` +
+        `*Phone:* ${form.phone.trim()}\n` +
+        `*Email:* ${form.email.trim()}\n` +
+        `*Business Name:* ${form.business_name.trim()}\n` +
+        `*Website Type:* ${form.website_type}\n` +
+        `*Preferred Contact:* ${form.preferred_contact_method}\n` +
+        `*Budget:* ${form.budget}\n` +
+        (form.deadline.trim() ? `*Deadline:* ${form.deadline.trim()}\n` : '') +
+        `*Project Details:* ${form.project_description.trim()}\n\n` +
+        `Thank you!`;
+
+      const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
+      setLastWaUrl(waUrl);
+
       setSubmitted(true);
+
+      // Automatically trigger WhatsApp redirect
+      try {
+        window.open(waUrl, '_blank');
+      } catch (err) {
+        console.log('WhatsApp open error:', err);
+      }
+
       setForm({
         full_name: '',
         phone: '',
@@ -610,13 +636,27 @@ export default function WebsiteServices() {
             )}
 
             {submitted ? (
-              <div className="success-banner-clay">
+              <div className="success-banner-clay" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center' }}>
                 <CheckCircle2 size={48} color="var(--color-success)" />
                 <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>Request Submitted Successfully!</h3>
-                <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)' }}>
-                  {formSettings.success_message || 'Thank you! Your website request has been received.'}
+                <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)', maxWidth: '500px' }}>
+                  {formSettings.success_message || 'Thank you! Your website request has been saved and sent.'}
                 </p>
-                <ClayButton size="sm" onClick={() => setSubmitted(false)} style={{ marginTop: '12px' }}>
+
+                {lastWaUrl && (
+                  <a
+                    href={lastWaUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="clay-button-primary"
+                    style={{ textDecoration: 'none', background: '#25D366', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 22px', borderRadius: 'var(--radius-pill)', fontWeight: '800', fontSize: '14px', marginTop: '6px' }}
+                  >
+                    <MessageCircle size={18} />
+                    <span>Send Details on WhatsApp</span>
+                  </a>
+                )}
+
+                <ClayButton size="sm" onClick={() => setSubmitted(false)} style={{ marginTop: '8px' }}>
                   Submit Another Request
                 </ClayButton>
               </div>
