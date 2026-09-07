@@ -205,21 +205,16 @@ export default function ToolDetails() {
       .eq("id", user.id)
       .single();
 
-    // Insert review comment including userRating
-    try {
-      await supabase.from('comments').insert([{
-        tool_id: id,
-        user_id: user.id,
-        username: profile?.username || "User",
-        avatar_url: profile?.avatar_url || "",
-        content: newComment,
-        rating: userRating,
-        parent_id: null,
-        likes: 0
-      }]);
-    } catch (e) {
-      console.warn('Comment insert with rating fallback:', e);
-    }
+    // Insert review comment (valid columns only)
+    await supabase.from('comments').insert([{
+      tool_id: id,
+      user_id: user.id,
+      username: profile?.username || "User",
+      avatar_url: profile?.avatar_url || "",
+      content: newComment,
+      parent_id: null,
+      likes: 0
+    }]);
 
     // Insert star rating into ratings table
     await supabase.from('ratings').insert([{
