@@ -18,11 +18,23 @@ import {
   Zap,
   Globe,
   Share2,
-  Bookmark
+  Bookmark,
+  Filter,
+  SlidersHorizontal,
+  Search,
+  UserCheck
 } from 'lucide-react';
 import { trackToolClick } from '../lib/analyticsTracker';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
 import '../styles/tooldetails.css';
+
+const RATING_LABELS = {
+  1: "1 - Terrible 😠",
+  2: "2 - Poor 🙁",
+  3: "3 - Average 🙂",
+  4: "4 - Very Good! 👍",
+  5: "5 - Outstanding! 🚀"
+};
 
 export default function ToolDetails() {
   const { id } = useParams();
@@ -41,6 +53,11 @@ export default function ToolDetails() {
   const [editContent, setEditContent] = useState('');
   const [editRating, setEditRating] = useState(5);
   const [editHoverRating, setEditHoverRating] = useState(0);
+
+  // Filter & Sort States
+  const [selectedStarFilter, setSelectedStarFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [replyBox, setReplyBox] = useState(null);
   const [replyText, setReplyText] = useState("");
@@ -388,6 +405,33 @@ export default function ToolDetails() {
   const getReplies = (cid) => replies.filter(r => r.parent_id === cid);
   const initial = (name) => name?.charAt(0)?.toUpperCase() || "U";
 
+  // Filter and Sort main comments
+  const filteredComments = mainComments
+    .filter(c => {
+      if (selectedStarFilter !== 'all' && Number(c.rating || 5) !== Number(selectedStarFilter)) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const contentMatch = (c.content || '').toLowerCase().includes(q);
+        const userMatch = (c.username || '').toLowerCase().includes(q);
+        if (!contentMatch && !userMatch) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'highest') {
+        return Number(b.rating || 5) - Number(a.rating || 5);
+      }
+      if (sortBy === 'lowest') {
+        return Number(a.rating || 5) - Number(b.rating || 5);
+      }
+      if (sortBy === 'likes') {
+        return Number(b.likes || 0) - Number(a.likes || 0);
+      }
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+
   if (!tool) {
     return (
       <div className="page-container">
@@ -498,8 +542,15 @@ export default function ToolDetails() {
                 {[5, 4, 3, 2, 1].map((starVal) => {
                   const count = ratingsDistribution[starVal] || 0;
                   const percentage = Math.round((count / totalRatingsCount) * 100);
+                  const isSelected = selectedStarFilter === starVal.toString();
                   return (
-                    <div key={starVal} className="breakdown-item">
+                    <div 
+                      key={starVal} 
+                      className={`breakdown-item ${isSelected ? 'active-breakdown-filter' : ''}`}
+                      onClick={() => setSelectedStarFilter(isSelected ? 'all' : starVal.toString())}
+                      title={`Filter by ${starVal} stars`}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <span className="star-text">{starVal} ★</span>
                       <div className="progress-bg clay-inset">
                         <div className="progress-fill" style={{ width: `${percentage}%` }}></div>
@@ -535,6 +586,9 @@ export default function ToolDetails() {
                     </button>
                   ))}
                 </div>
+                <span className="rating-hover-label">
+                  {RATING_LABELS[hoverRating || userRating]}
+                </span>
               </div>
 
               <textarea
@@ -552,197 +606,277 @@ export default function ToolDetails() {
             </div>
           </div>
 
+          {/* FILTER & SORT CONTROLS BAR */}
+          <div className="review-controls-bar clay-surface">
+            <div className="star-filter-pills">
+              <button 
+                className={`clay-pill filter-pill ${selectedStarFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setSelectedStarFilter('all')}
+                type="button"
+              >
+                All Reviews ({mainComments.length})
+              </button>
+              {[5, 4, 3, 2, 1].map(starVal => (
+                <button 
+                  key={starVal}
+                  className={`clay-pill filter-pill ${selectedStarFilter === starVal.toString() ? 'active' : ''}`}
+                  onClick={() => setSelectedStarFilter(starVal.toString())}
+                  type="button"
+                >
+                  ★ {starVal} ({mainComments.filter(c => Number(c.rating || 5) === starVal).length})
+                </button>
+              ))}
+            </div>
+
+            <div className="search-sort-group">
+              <div className="review-search-box clay-inset">
+                <Search size={14} className="search-icon" />
+                <input 
+                  type="text" 
+                  placeholder="Search reviews..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="sort-selector-wrapper">
+                <SlidersHorizontal size={14} color="var(--text-muted)" />
+                <select 
+                  className="clay-select-input"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="highest">Highest Rated</option>
+                  <option value="lowest">Lowest Rated</option>
+                  <option value="likes">Most Helpful / Liked</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           {/* REVIEWS LIST */}
           <div className="reviews-list">
-            {mainComments.length === 0 && (
+            {filteredComments.length === 0 && (
               <div className="empty-reviews clay-surface">
-                <p>No reviews posted yet. Be the first to share your review!</p>
+                <p>No reviews match your filter criteria.</p>
+                {selectedStarFilter !== 'all' || searchQuery.trim() ? (
+                  <button 
+                    className="clay-button clay-button-primary"
+                    onClick={() => { setSelectedStarFilter('all'); setSearchQuery(''); }}
+                    style={{ marginTop: '10px', fontSize: '12px' }}
+                  >
+                    Reset Filters
+                  </button>
+                ) : null}
               </div>
             )}
 
-            {mainComments.map(c => (
-              <div key={c.id} className="review-card clay-surface">
-                <div className="review-card-header">
-                  <div className="reviewer-info" onClick={() => {
-                    if (!user) {
-                      alert("Please login first to chat with members");
-                      navigate('/login');
-                      return;
-                    }
-                    navigate(`/chat/${c.user_id}`);
-                  }}>
-                    {c.avatar_url ? (
-                      <img src={c.avatar_url} alt="" className="clay-avatar" />
-                    ) : (
-                      <div className="clay-avatar">{initial(c.username)}</div>
-                    )}
-                    <div>
-                      <h4>{c.username}</h4>
-                      <span className="review-date">{new Date(c.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
+            {filteredComments.map(c => {
+              const childReplies = getReplies(c.id);
+              const isCurrentUser = user?.id === c.user_id;
 
-                  <div className="review-stars-row">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star
-                        key={s}
-                        size={13}
-                        fill={s <= Number(c.rating || 5) ? "#facc15" : "none"}
-                        color={s <= Number(c.rating || 5) ? "#facc15" : "var(--text-muted)"}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {editingId === c.id ? (
-                  <div className="edit-review-clay-box" style={{ marginTop: '12px', padding: '14px', background: 'var(--clay-surface-recessed)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div className="star-rating-picker" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)' }}>Edit Rating:</span>
-                      <div className="interactive-stars" style={{ display: 'flex', gap: '4px' }}>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            type="button"
-                            className="star-pick-btn"
-                            onMouseEnter={() => setEditHoverRating(star)}
-                            onMouseLeave={() => setEditHoverRating(0)}
-                            onClick={() => setEditRating(star)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                          >
-                            <Star
-                              size={18}
-                              fill={(editHoverRating || editRating) >= star ? "#facc15" : "none"}
-                              color={(editHoverRating || editRating) >= star ? "#facc15" : "var(--text-muted)"}
-                            />
-                          </button>
-                        ))}
+              return (
+                <div key={c.id} className="review-card clay-surface">
+                  <div className="review-card-header">
+                    <div className="reviewer-info" onClick={() => {
+                      if (!user) {
+                        alert("Please login first to chat with members");
+                        navigate('/login');
+                        return;
+                      }
+                      navigate(`/chat/${c.user_id}`);
+                    }}>
+                      {c.avatar_url ? (
+                        <img src={c.avatar_url} alt="" className="clay-avatar" />
+                      ) : (
+                        <div className="clay-avatar">{initial(c.username)}</div>
+                      )}
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <h4>{c.username}</h4>
+                          {isCurrentUser && (
+                            <span className="author-badge" title="Your Review">
+                              <UserCheck size={10} /> You
+                            </span>
+                          )}
+                        </div>
+                        <span className="review-date">{new Date(c.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
 
-                    <textarea
-                      className="clay-input"
-                      rows="3"
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      placeholder="Update your review..."
-                      style={{ width: '100%', resize: 'vertical' }}
-                    />
-
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                      <button className="clay-pill" onClick={cancelEditing} type="button">
-                        Cancel
-                      </button>
-                      <button className="clay-button clay-button-primary" onClick={() => saveEdit(c.id, c.user_id)} type="button" style={{ padding: '6px 14px', fontSize: '12px' }}>
-                        Save Changes
-                      </button>
+                    <div className="review-stars-row" title={`Rated ${c.rating} out of 5 stars`}>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          size={14}
+                          fill={s <= Number(c.rating || 5) ? "#facc15" : "none"}
+                          color={s <= Number(c.rating || 5) ? "#facc15" : "var(--text-muted)"}
+                        />
+                      ))}
                     </div>
                   </div>
-                ) : (
-                  <p className="review-content-text">{c.content}</p>
-                )}
 
-                <div className="review-footer-actions">
-                  <button
-                    className={`clay-pill action-pill ${likedComments[c.id] ? 'liked' : ''}`}
-                    onClick={() => likeComment(c.id)}
-                    type="button"
-                  >
-                    <Heart size={13} fill={likedComments[c.id] ? "#ef4444" : "none"} />
-                    <span>{c.likes ?? 0} Likes</span>
-                  </button>
+                  {editingId === c.id ? (
+                    <div className="edit-review-clay-box" style={{ marginTop: '12px', padding: '14px', background: 'var(--clay-surface-recessed)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div className="star-rating-picker" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)' }}>Edit Rating:</span>
+                        <div className="interactive-stars" style={{ display: 'flex', gap: '4px' }}>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              className="star-pick-btn"
+                              onMouseEnter={() => setEditHoverRating(star)}
+                              onMouseLeave={() => setEditHoverRating(0)}
+                              onClick={() => setEditRating(star)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                              <Star
+                                size={18}
+                                fill={(editHoverRating || editRating) >= star ? "#facc15" : "none"}
+                                color={(editHoverRating || editRating) >= star ? "#facc15" : "var(--text-muted)"}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                        <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--accent-primary)' }}>
+                          {RATING_LABELS[editHoverRating || editRating]}
+                        </span>
+                      </div>
 
-                  <button
-                    className="clay-pill action-pill"
-                    onClick={() => {
-                      setReplyBox(c.id);
-                      setReplyTo(c);
-                    }}
-                    type="button"
-                  >
-                    <CornerDownRight size={13} />
-                    <span>Reply</span>
-                  </button>
+                      <textarea
+                        className="clay-input"
+                        rows="3"
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        placeholder="Update your review..."
+                        style={{ width: '100%', resize: 'vertical' }}
+                      />
 
-                  {user?.id !== c.user_id && (
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        <button className="clay-pill" onClick={cancelEditing} type="button">
+                          Cancel
+                        </button>
+                        <button className="clay-button clay-button-primary" onClick={() => saveEdit(c.id, c.user_id)} type="button" style={{ padding: '6px 14px', fontSize: '12px' }}>
+                          Save Changes
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="review-content-text">{c.content}</p>
+                  )}
+
+                  <div className="review-footer-actions">
+                    <button
+                      className={`clay-pill action-pill ${likedComments[c.id] ? 'liked' : ''}`}
+                      onClick={() => likeComment(c.id)}
+                      type="button"
+                    >
+                      <Heart size={13} fill={likedComments[c.id] ? "#ef4444" : "none"} />
+                      <span>{c.likes ?? 0} Likes</span>
+                    </button>
+
                     <button
                       className="clay-pill action-pill"
                       onClick={() => {
-                        if (!user) {
-                          alert("Please login first to chat with members");
-                          navigate('/login');
-                          return;
-                        }
-                        navigate(`/chat/${c.user_id}`);
+                        setReplyBox(replyBox === c.id ? null : c.id);
+                        setReplyTo(c);
                       }}
                       type="button"
                     >
-                      <MessageSquare size={13} />
-                      <span>Chat</span>
+                      <CornerDownRight size={13} />
+                      <span>Reply {childReplies.length > 0 ? `(${childReplies.length})` : ''}</span>
                     </button>
-                  )}
 
-                  {user?.id === c.user_id && (
-                    <>
+                    {!isCurrentUser && (
                       <button
                         className="clay-pill action-pill"
-                        onClick={() => startEditing(c)}
+                        onClick={() => {
+                          if (!user) {
+                            alert("Please login first to chat with members");
+                            navigate('/login');
+                            return;
+                          }
+                          navigate(`/chat/${c.user_id}`);
+                        }}
                         type="button"
                       >
-                        <Pencil size={13} />
-                        <span>Edit</span>
+                        <MessageSquare size={13} />
+                        <span>Chat</span>
                       </button>
+                    )}
 
-                      <button
-                        className="clay-pill action-pill delete-pill"
-                        onClick={() => deleteComment(c.id, c.user_id)}
-                        type="button"
-                      >
-                        <Trash2 size={13} />
-                        <span>Delete</span>
+                    {isCurrentUser && (
+                      <>
+                        <button
+                          className="clay-pill action-pill"
+                          onClick={() => startEditing(c)}
+                          type="button"
+                        >
+                          <Pencil size={13} />
+                          <span>Edit</span>
+                        </button>
+
+                        <button
+                          className="clay-pill action-pill delete-pill"
+                          onClick={() => deleteComment(c.id, c.user_id)}
+                          type="button"
+                        >
+                          <Trash2 size={13} />
+                          <span>Delete</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* REPLY INPUT */}
+                  {replyBox === c.id && (
+                    <div className="reply-form-clay">
+                      <input
+                        className="clay-input reply-field"
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder={`Reply to ${replyTo?.username}...`}
+                      />
+                      <button className="clay-button clay-button-primary send-reply-btn" onClick={() => addReply(c.id)} type="button">
+                        Send Reply
                       </button>
-                    </>
+                    </div>
+                  )}
+
+                  {/* NESTED REPLIES */}
+                  {childReplies.length > 0 && (
+                    <div className="nested-replies-list">
+                      {childReplies.map(r => (
+                        <div key={r.id} className="nested-reply-card clay-raised">
+                          <div className="reviewer-info">
+                            {r.avatar_url ? (
+                              <img src={r.avatar_url} alt="" className="clay-avatar avatar-sm" />
+                            ) : (
+                              <div className="clay-avatar avatar-sm">{initial(r.username)}</div>
+                            )}
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <h5>{r.username}</h5>
+                                {user?.id === r.user_id && (
+                                  <span className="author-badge" title="Your Reply">
+                                    <UserCheck size={9} /> You
+                                  </span>
+                                )}
+                              </div>
+                              <span className="review-date">{new Date(r.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+
+                          <p className="reply-content-text">{r.content}</p>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
-
-                {/* REPLY INPUT */}
-                {replyBox === c.id && (
-                  <div className="reply-form-clay">
-                    <input
-                      className="clay-input reply-field"
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      placeholder={`Reply to ${replyTo?.username}...`}
-                    />
-                    <button className="clay-button clay-button-primary send-reply-btn" onClick={() => addReply(c.id)} type="button">
-                      Send Reply
-                    </button>
-                  </div>
-                )}
-
-                {/* NESTED REPLIES */}
-                {getReplies(c.id).length > 0 && (
-                  <div className="nested-replies-list">
-                    {getReplies(c.id).map(r => (
-                      <div key={r.id} className="nested-reply-card clay-raised">
-                        <div className="reviewer-info">
-                          {r.avatar_url ? (
-                            <img src={r.avatar_url} alt="" className="clay-avatar avatar-sm" />
-                          ) : (
-                            <div className="clay-avatar avatar-sm">{initial(r.username)}</div>
-                          )}
-                          <div>
-                            <h5>{r.username}</h5>
-                            <span className="review-date">{new Date(r.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-
-                        <p className="reply-content-text">{r.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </main>
