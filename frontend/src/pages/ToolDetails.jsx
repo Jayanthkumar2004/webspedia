@@ -112,7 +112,7 @@ export default function ToolDetails() {
       .eq('tool_id', id)
       .order('created_at', { ascending: false });
 
-    // Build map of user_id -> rating
+    // Build map of user_id -> rating from ratings table
     const userRatingsMap = {};
     if (ratingsData && ratingsData.length > 0) {
       ratingsData.forEach(r => {
@@ -122,16 +122,28 @@ export default function ToolDetails() {
       });
     }
 
-    // Attach rating to each comment object
+    // Attach rating to each comment object (prioritizing ground truth from ratings table)
     const enrichedComments = (commentsData || []).map((c, idx) => {
-      let ratingVal = Number(c.rating || 0);
-      if (!ratingVal && c.user_id && userRatingsMap[c.user_id]) {
+      let ratingVal = 0;
+      
+      // 1. Try finding rating from ratings table by user_id
+      if (c.user_id && userRatingsMap[c.user_id] !== undefined) {
         ratingVal = userRatingsMap[c.user_id];
       }
+      
+      // 2. Try matching by index in ratingsData
       if (!ratingVal && ratingsData && ratingsData[idx]) {
-        ratingVal = Number(ratingsData[idx].rating || 5);
+        ratingVal = Number(ratingsData[idx].rating);
       }
+      
+      // 3. Try finding rating directly on comment object
+      if (!ratingVal && c.rating) {
+        ratingVal = Number(c.rating);
+      }
+      
+      // 4. Default fallback to 5
       if (!ratingVal) ratingVal = 5;
+
       return { ...c, rating: ratingVal };
     });
 
@@ -205,24 +217,42 @@ export default function ToolDetails() {
       .eq("id", user.id)
       .single();
 
-    // Insert review comment (including rating)
-    await supabase.from('comments').insert([{
-      tool_id: id,
-      user_id: user.id,
-      username: profile?.username || "User",
-      avatar_url: profile?.avatar_url || "",
-      content: newComment,
-      rating: userRating,
-      parent_id: null,
-      likes: 0
-    }]);
+    // Insert review comment
+    try {
+      await supabase.from('comments').insert([{
+        tool_id: id,
+        user_id: user.id,
+        username: profile?.username || "User",
+        avatar_url: profile?.avatar_url || "",
+        content: newComment.trim(),
+        parent_id: null,
+        likes: 0
+      }]);
+    } catch (e) {
+      console.warn('Comments insert error:', e);
+    }
 
-    // Insert star rating into ratings table
-    await supabase.from('ratings').insert([{
-      tool_id: id,
-      user_id: user.id,
-      rating: userRating
-    }]);
+    // Insert or update rating in ratings table
+    try {
+      const { data: existingRating } = await supabase
+        .from('ratings')
+        .select('id')
+        .eq('tool_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existingRating) {
+        await supabase.from('ratings').update({ rating: userRating }).eq('id', existingRating.id);
+      } else {
+        await supabase.from('ratings').insert([{
+          tool_id: id,
+          user_id: user.id,
+          rating: userRating
+        }]);
+      }
+    } catch (e) {
+      console.warn('Ratings insert error:', e);
+    }
 
     setNewComment("");
     setUserRating(5);
