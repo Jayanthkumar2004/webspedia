@@ -92,9 +92,39 @@ export default function WebsiteRequestsManager() {
       alert("Please check the client's WhatsApp number.");
       return;
     }
+    console.log('Opening WhatsApp modal for client:', req.full_name, 'Phone:', phone);
     setWaTargetReq(req);
     setWaCustomMessage(getDefaultWaMessage(req));
     setWaModalOpen(true);
+  };
+
+  const handleSendWhatsApp = (client) => {
+    if (!client || !client.phone) {
+      alert("Client WhatsApp number is not available.");
+      return;
+    }
+
+    const phone = normalizeWhatsAppNumber(client.phone);
+
+    if (!phone) {
+      alert("Please check the client's WhatsApp number.");
+      return;
+    }
+
+    const whatsappMessage = `Hi! 👋\n\n` +
+      `Thank you for choosing Webspedia! 🚀\n\n` +
+      `We’ve successfully received your website request.\n\n` +
+      `Our team has reviewed your requirements and will get back to you shortly.\n\n` +
+      `Thank you for trusting Webspedia. We’re excited to help bring your website idea to life! 💻✨\n\n` +
+      `— Team Webspedia`;
+
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMessage)}`;
+
+    console.log('Direct Send WhatsApp - Client name:', client.full_name);
+    console.log('Direct Send WhatsApp - Client phone:', phone);
+    console.log('Direct Send WhatsApp - WhatsApp URL:', whatsappUrl);
+
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleDispatchWa = () => {
@@ -112,6 +142,7 @@ export default function WebsiteRequestsManager() {
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(waCustomMessage)}`;
 
+    console.log('Dispatching WhatsApp for client:', waTargetReq.full_name);
     console.log('Client phone:', phone);
     console.log('WhatsApp URL:', whatsappUrl);
 
