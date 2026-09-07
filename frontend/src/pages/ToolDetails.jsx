@@ -205,13 +205,14 @@ export default function ToolDetails() {
       .eq("id", user.id)
       .single();
 
-    // Insert review comment (valid columns only)
+    // Insert review comment (including rating)
     await supabase.from('comments').insert([{
       tool_id: id,
       user_id: user.id,
       username: profile?.username || "User",
       avatar_url: profile?.avatar_url || "",
       content: newComment,
+      rating: userRating,
       parent_id: null,
       likes: 0
     }]);
