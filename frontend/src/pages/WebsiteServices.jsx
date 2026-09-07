@@ -126,13 +126,23 @@ export default function WebsiteServices() {
   const [lastClientWaUrl, setLastClientWaUrl] = useState('');
   const [lastAdminWaUrl, setLastAdminWaUrl] = useState('');
 
-  const formatWaNumber = (phoneStr) => {
+  const normalizePhoneNumber = (phoneStr) => {
     if (!phoneStr) return '';
-    const digitsOnly = phoneStr.replace(/\D/g, '');
-    if (digitsOnly.length === 10) {
-      return `91${digitsOnly}`;
+    let cleaned = phoneStr.trim().replace(/[\s\-\(\)\.\,]/g, '');
+    if (cleaned.startsWith('+')) {
+      cleaned = cleaned.substring(1);
     }
-    return digitsOnly;
+    cleaned = cleaned.replace(/\D/g, '');
+    if (cleaned.length === 11 && cleaned.startsWith('0')) {
+      cleaned = cleaned.substring(1);
+    }
+    if (cleaned.length === 10) {
+      cleaned = `91${cleaned}`;
+    }
+    if (cleaned.length < 10 || cleaned.length > 15) {
+      return '';
+    }
+    return cleaned;
   };
 
   useEffect(() => {
@@ -245,23 +255,16 @@ export default function WebsiteServices() {
       }
 
       // 1. Format client & admin phone numbers for WhatsApp
-      const clientPhoneFormatted = formatWaNumber(form.phone);
-      const adminPhoneFormatted = (contactSettings?.whatsapp_number || '+919876543210').replace(/\D/g, '');
+      const clientPhoneFormatted = normalizePhoneNumber(form.phone);
+      const adminPhoneFormatted = normalizePhoneNumber(contactSettings?.whatsapp_number || '+919876543210');
 
       // 2. Client Thank-You WhatsApp Message
-      const clientWaMessage = `Hello ${form.full_name.trim()}! 👋\n\n` +
-        `Thank you for choosing *Webspedia Digital Studio*! 🚀\n\n` +
-        `We have successfully received your request for *${form.business_name.trim()}* (${form.website_type}). Our team is reviewing your requirements and will get in touch with you shortly.\n\n` +
-        `*Request Details Summary:*\n` +
-        `• *Client Name:* ${form.full_name.trim()}\n` +
-        `• *Website Type:* ${form.website_type}\n` +
-        `• *Preferred Contact:* ${form.preferred_contact_method}\n` +
-        `• *Budget Range:* ${form.budget}\n` +
-        (form.deadline.trim() ? `• *Target Deadline:* ${form.deadline.trim()}\n` : '') +
-        `\nFeel free to reply directly to this message if you have any immediate updates or questions!\n\n` +
-        `Best regards,\n` +
-        `*Webspedia Team*\n` +
-        `https://webspedia.in`;
+      const clientWaMessage = `Hi! 👋\n` +
+        `Thank you for choosing Webspedia! 🚀\n` +
+        `We’ve successfully received your website request.\n` +
+        `Our team will review your requirements and get back to you shortly.\n` +
+        `Thank you for trusting Webspedia. We’re excited to help bring your website idea to life! 💻✨\n` +
+        `— Team Webspedia`;
 
       const clientWaUrl = clientPhoneFormatted ? `https://wa.me/${clientPhoneFormatted}?text=${encodeURIComponent(clientWaMessage)}` : '';
 
