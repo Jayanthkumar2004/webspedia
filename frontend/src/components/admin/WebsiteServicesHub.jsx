@@ -92,6 +92,63 @@ export default function WebsiteServicesHub({ initialTab = 'Dashboard' }) {
   const [modalType, setModalType] = useState(''); // 'service', 'audience', 'benefit', 'portfolio', 'package', 'process', 'faq', 'request_detail', 'social'
   const [activeItem, setActiveItem] = useState(null);
 
+  const normalizeWhatsAppNumber = (phone) => {
+    if (!phone) return null;
+
+    let number = String(phone).trim();
+
+    // Remove spaces, brackets, hyphens and other formatting
+    number = number.replace(/[^\d+]/g, '');
+
+    // Remove leading +
+    number = number.replace(/^\+/, '');
+
+    // Handle leading 0 (e.g. 09063715724 -> 9063715724)
+    if (number.length === 11 && number.startsWith('0')) {
+      number = number.substring(1);
+    }
+
+    // Prepend country code 91 if a 10-digit number without country code is provided
+    if (number.length === 10) {
+      number = `91${number}`;
+    }
+
+    // Enforce valid digit length (between 10 and 15 digits)
+    if (number.length < 10 || number.length > 15) {
+      return null;
+    }
+
+    return number;
+  };
+
+  const handleSendWhatsApp = (client) => {
+    if (!client || !client.phone) {
+      alert("Client WhatsApp number is not available.");
+      return;
+    }
+
+    const phone = normalizeWhatsAppNumber(client.phone);
+
+    if (!phone) {
+      alert("Please check the client's WhatsApp number.");
+      return;
+    }
+
+    const message = `Hi! 👋\n\n` +
+      `Thank you for choosing Webspedia! 🚀\n\n` +
+      `We’ve successfully received your website request.\n\n` +
+      `Our team has reviewed your requirements and will get back to you shortly.\n\n` +
+      `Thank you for trusting Webspedia. We’re excited to help bring your website idea to life! 💻✨\n\n` +
+      `— Team Webspedia`;
+
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+    console.log('Sending WhatsApp to client:', client.full_name, 'Phone:', phone);
+    console.log('WhatsApp URL:', whatsappUrl);
+
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   useEffect(() => {
     loadAllData();
   }, []);
@@ -525,11 +582,20 @@ export default function WebsiteServicesHub({ initialTab = 'Dashboard' }) {
                       </select>
                     </td>
                     <td style={{ padding: '12px' }}>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <ClayButton size="sm" onClick={() => handleOpenModal('request_detail', r)}>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <ClayButton
+                          size="sm"
+                          onClick={() => handleSendWhatsApp(r)}
+                          title="Send WhatsApp Message to Client"
+                          style={{ background: '#25D366', color: '#ffffff', border: 'none', gap: '4px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', padding: '6px 12px', borderRadius: '8px', fontSize: '12px' }}
+                        >
+                          <MessageCircle size={14} />
+                          <span>Send WhatsApp</span>
+                        </ClayButton>
+                        <ClayButton size="sm" onClick={() => handleOpenModal('request_detail', r)} title="View Details">
                           <Eye size={14} />
                         </ClayButton>
-                        <ClayButton size="sm" variant="danger" onClick={() => handleDeleteItem('request', r.id)}>
+                        <ClayButton size="sm" variant="danger" onClick={() => handleDeleteItem('request', r.id)} title="Delete Request">
                           <Trash2 size={14} />
                         </ClayButton>
                       </div>
@@ -1127,9 +1193,14 @@ export default function WebsiteServicesHub({ initialTab = 'Dashboard' }) {
 
                   {/* QUICK CONTACT ACTION BUTTONS */}
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <a href={`https://wa.me/${(activeItem.phone || '').replace(/\D/g,'')}`} target="_blank" rel="noreferrer" className="clay-pill" style={{ textDecoration: 'none', background: '#25D366', color: '#fff', padding: '8px 14px', borderRadius: '12px', fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <MessageCircle size={14} /> WhatsApp
-                    </a>
+                    <ClayButton
+                      type="button"
+                      onClick={() => handleSendWhatsApp(activeItem)}
+                      className="clay-pill"
+                      style={{ background: '#25D366', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '12px', fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+                    >
+                      <MessageCircle size={14} /> Send WhatsApp
+                    </ClayButton>
                     <a href={`tel:${activeItem.phone}`} className="clay-pill" style={{ textDecoration: 'none', background: '#3B82F6', color: '#fff', padding: '8px 14px', borderRadius: '12px', fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Phone size={14} /> Call Phone
                     </a>
