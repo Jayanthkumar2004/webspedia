@@ -284,6 +284,21 @@ export const INITIAL_SEO_SETTINGS = {
 // Cache of tables that do not exist yet in Supabase PostgREST schema
 const missingTablesSet = new Set();
 
+// Helper to check valid UUID
+function isValidUUID(str) {
+  if (!str || typeof str !== 'string') return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
+// Helper to sanitize payload for Supabase PostgreSQL UUID columns
+function sanitizePayload(payload) {
+  const clean = { ...payload };
+  if (clean.id && !isValidUUID(clean.id)) {
+    delete clean.id;
+  }
+  return clean;
+}
+
 // Local storage helper fallback
 function getLocal(key, defaultVal) {
   try {
@@ -327,6 +342,31 @@ async function fetchGeneric(table, localKey, defaultVal) {
   return getLocal(localKey, defaultVal);
 }
 
+// Helper for singleton settings upsert
+async function updateSingletonSettings(table, localKey, payload) {
+  try {
+    const cleanPayload = sanitizePayload(payload);
+
+    // Look for an existing DB row to preserve its valid UUID
+    const { data: existing } = await supabase.from(table).select('id').limit(1);
+    if (existing && existing[0]) {
+      cleanPayload.id = existing[0].id;
+    }
+
+    const { data, error } = await supabase.from(table).upsert([cleanPayload]).select();
+    if (!error && data && data[0]) {
+      setLocal(localKey, [data[0]]);
+      return data[0];
+    } else if (error) {
+      console.warn(`Supabase ${table} upsert warning:`, error.message);
+    }
+  } catch (e) {
+    console.warn(`Exception updating ${table}:`, e);
+  }
+  setLocal(localKey, [payload]);
+  return payload;
+}
+
 // ---------------------------------------------------------
 // 1. HERO SECTION API
 // ---------------------------------------------------------
@@ -336,15 +376,7 @@ export async function getHeroSettings() {
 }
 
 export async function updateHeroSettings(payload) {
-  try {
-    const { data, error } = await supabase.from('website_hero').upsert([payload]).select();
-    if (!error && data && data[0]) {
-      setLocal('hero', [data[0]]);
-      return data[0];
-    }
-  } catch (e) {}
-  setLocal('hero', [payload]);
-  return payload;
+  return await updateSingletonSettings('website_hero', 'hero', payload);
 }
 
 // ---------------------------------------------------------
@@ -355,15 +387,17 @@ export async function getServices() {
 }
 
 export async function createService(item) {
-  const newItem = { id: `srv_${Date.now()}`, is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const cleanPayload = sanitizePayload(newItem);
   try {
-    const { data, error } = await supabase.from('website_services').insert([newItem]).select();
+    const { data, error } = await supabase.from('website_services').insert([cleanPayload]).select();
     if (!error && data && data[0]) {
       const current = getLocal('services', INITIAL_SERVICES);
       setLocal('services', [...current, data[0]]);
       return data[0];
     }
   } catch (e) {}
+  newItem.id = `srv_${Date.now()}`;
   const current = getLocal('services', INITIAL_SERVICES);
   const updated = [...current, newItem];
   setLocal('services', updated);
@@ -372,12 +406,15 @@ export async function createService(item) {
 
 export async function updateService(id, payload) {
   try {
-    const { error } = await supabase.from('website_services').update(payload).eq('id', id);
-    if (!error) {
-      const current = getLocal('services', INITIAL_SERVICES);
-      const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
-      setLocal('services', updated);
-      return true;
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      const { error } = await supabase.from('website_services').update(cleanPayload).eq('id', id);
+      if (!error) {
+        const current = getLocal('services', INITIAL_SERVICES);
+        const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
+        setLocal('services', updated);
+        return true;
+      }
     }
   } catch (e) {}
   const current = getLocal('services', INITIAL_SERVICES);
@@ -388,7 +425,9 @@ export async function updateService(id, payload) {
 
 export async function deleteService(id) {
   try {
-    await supabase.from('website_services').delete().eq('id', id);
+    if (isValidUUID(id)) {
+      await supabase.from('website_services').delete().eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('services', INITIAL_SERVICES);
   const updated = current.filter(item => item.id !== id);
@@ -404,15 +443,17 @@ export async function getTargetAudiences() {
 }
 
 export async function createTargetAudience(item) {
-  const newItem = { id: `aud_${Date.now()}`, is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const cleanPayload = sanitizePayload(newItem);
   try {
-    const { data, error } = await supabase.from('website_audiences').insert([newItem]).select();
+    const { data, error } = await supabase.from('website_audiences').insert([cleanPayload]).select();
     if (!error && data && data[0]) {
       const current = getLocal('audiences', INITIAL_AUDIENCES);
       setLocal('audiences', [...current, data[0]]);
       return data[0];
     }
   } catch (e) {}
+  newItem.id = `aud_${Date.now()}`;
   const current = getLocal('audiences', INITIAL_AUDIENCES);
   const updated = [...current, newItem];
   setLocal('audiences', updated);
@@ -421,7 +462,10 @@ export async function createTargetAudience(item) {
 
 export async function updateTargetAudience(id, payload) {
   try {
-    await supabase.from('website_audiences').update(payload).eq('id', id);
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      await supabase.from('website_audiences').update(cleanPayload).eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('audiences', INITIAL_AUDIENCES);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
@@ -431,7 +475,9 @@ export async function updateTargetAudience(id, payload) {
 
 export async function deleteTargetAudience(id) {
   try {
-    await supabase.from('website_audiences').delete().eq('id', id);
+    if (isValidUUID(id)) {
+      await supabase.from('website_audiences').delete().eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('audiences', INITIAL_AUDIENCES);
   const updated = current.filter(item => item.id !== id);
@@ -447,15 +493,17 @@ export async function getWhyChooseUs() {
 }
 
 export async function createWhyChooseUs(item) {
-  const newItem = { id: `ben_${Date.now()}`, is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const cleanPayload = sanitizePayload(newItem);
   try {
-    const { data, error } = await supabase.from('website_benefits').insert([newItem]).select();
+    const { data, error } = await supabase.from('website_benefits').insert([cleanPayload]).select();
     if (!error && data && data[0]) {
       const current = getLocal('benefits', INITIAL_BENEFITS);
       setLocal('benefits', [...current, data[0]]);
       return data[0];
     }
   } catch (e) {}
+  newItem.id = `ben_${Date.now()}`;
   const current = getLocal('benefits', INITIAL_BENEFITS);
   const updated = [...current, newItem];
   setLocal('benefits', updated);
@@ -464,7 +512,10 @@ export async function createWhyChooseUs(item) {
 
 export async function updateWhyChooseUs(id, payload) {
   try {
-    await supabase.from('website_benefits').update(payload).eq('id', id);
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      await supabase.from('website_benefits').update(cleanPayload).eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('benefits', INITIAL_BENEFITS);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
@@ -474,7 +525,9 @@ export async function updateWhyChooseUs(id, payload) {
 
 export async function deleteWhyChooseUs(id) {
   try {
-    await supabase.from('website_benefits').delete().eq('id', id);
+    if (isValidUUID(id)) {
+      await supabase.from('website_benefits').delete().eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('benefits', INITIAL_BENEFITS);
   const updated = current.filter(item => item.id !== id);
@@ -490,15 +543,17 @@ export async function getPortfolio() {
 }
 
 export async function createPortfolioItem(item) {
-  const newItem = { id: `port_${Date.now()}`, published: true, featured: false, display_order: Date.now(), ...item };
+  const newItem = { published: true, featured: false, display_order: Date.now(), ...item };
+  const cleanPayload = sanitizePayload(newItem);
   try {
-    const { data, error } = await supabase.from('website_portfolio').insert([newItem]).select();
+    const { data, error } = await supabase.from('website_portfolio').insert([cleanPayload]).select();
     if (!error && data && data[0]) {
       const current = getLocal('portfolio', INITIAL_PORTFOLIO);
       setLocal('portfolio', [...current, data[0]]);
       return data[0];
     }
   } catch (e) {}
+  newItem.id = `port_${Date.now()}`;
   const current = getLocal('portfolio', INITIAL_PORTFOLIO);
   const updated = [...current, newItem];
   setLocal('portfolio', updated);
@@ -507,7 +562,10 @@ export async function createPortfolioItem(item) {
 
 export async function updatePortfolioItem(id, payload) {
   try {
-    await supabase.from('website_portfolio').update(payload).eq('id', id);
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      await supabase.from('website_portfolio').update(cleanPayload).eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('portfolio', INITIAL_PORTFOLIO);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
@@ -517,7 +575,9 @@ export async function updatePortfolioItem(id, payload) {
 
 export async function deletePortfolioItem(id) {
   try {
-    await supabase.from('website_portfolio').delete().eq('id', id);
+    if (isValidUUID(id)) {
+      await supabase.from('website_portfolio').delete().eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('portfolio', INITIAL_PORTFOLIO);
   const updated = current.filter(item => item.id !== id);
@@ -533,15 +593,17 @@ export async function getPackages() {
 }
 
 export async function createPackage(item) {
-  const newItem = { id: `pkg_${Date.now()}`, active: true, featured: false, display_order: Date.now(), ...item };
+  const newItem = { active: true, featured: false, display_order: Date.now(), ...item };
+  const cleanPayload = sanitizePayload(newItem);
   try {
-    const { data, error } = await supabase.from('website_packages').insert([newItem]).select();
+    const { data, error } = await supabase.from('website_packages').insert([cleanPayload]).select();
     if (!error && data && data[0]) {
       const current = getLocal('packages', INITIAL_PACKAGES);
       setLocal('packages', [...current, data[0]]);
       return data[0];
     }
   } catch (e) {}
+  newItem.id = `pkg_${Date.now()}`;
   const current = getLocal('packages', INITIAL_PACKAGES);
   const updated = [...current, newItem];
   setLocal('packages', updated);
@@ -550,7 +612,10 @@ export async function createPackage(item) {
 
 export async function updatePackage(id, payload) {
   try {
-    await supabase.from('website_packages').update(payload).eq('id', id);
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      await supabase.from('website_packages').update(cleanPayload).eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('packages', INITIAL_PACKAGES);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
@@ -560,7 +625,9 @@ export async function updatePackage(id, payload) {
 
 export async function deletePackage(id) {
   try {
-    await supabase.from('website_packages').delete().eq('id', id);
+    if (isValidUUID(id)) {
+      await supabase.from('website_packages').delete().eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('packages', INITIAL_PACKAGES);
   const updated = current.filter(item => item.id !== id);
@@ -576,15 +643,17 @@ export async function getProcessSteps() {
 }
 
 export async function createProcessStep(item) {
-  const newItem = { id: `pr_${Date.now()}`, is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const cleanPayload = sanitizePayload(newItem);
   try {
-    const { data, error } = await supabase.from('website_process').insert([newItem]).select();
+    const { data, error } = await supabase.from('website_process').insert([cleanPayload]).select();
     if (!error && data && data[0]) {
       const current = getLocal('process', INITIAL_PROCESS);
       setLocal('process', [...current, data[0]]);
       return data[0];
     }
   } catch (e) {}
+  newItem.id = `pr_${Date.now()}`;
   const current = getLocal('process', INITIAL_PROCESS);
   const updated = [...current, newItem];
   setLocal('process', updated);
@@ -593,7 +662,10 @@ export async function createProcessStep(item) {
 
 export async function updateProcessStep(id, payload) {
   try {
-    await supabase.from('website_process').update(payload).eq('id', id);
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      await supabase.from('website_process').update(cleanPayload).eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('process', INITIAL_PROCESS);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
@@ -603,7 +675,9 @@ export async function updateProcessStep(id, payload) {
 
 export async function deleteProcessStep(id) {
   try {
-    await supabase.from('website_process').delete().eq('id', id);
+    if (isValidUUID(id)) {
+      await supabase.from('website_process').delete().eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('process', INITIAL_PROCESS);
   const updated = current.filter(item => item.id !== id);
@@ -619,15 +693,17 @@ export async function getFaqs() {
 }
 
 export async function createFaq(item) {
-  const newItem = { id: `fq_${Date.now()}`, is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const cleanPayload = sanitizePayload(newItem);
   try {
-    const { data, error } = await supabase.from('website_faqs').insert([newItem]).select();
+    const { data, error } = await supabase.from('website_faqs').insert([cleanPayload]).select();
     if (!error && data && data[0]) {
       const current = getLocal('faqs', INITIAL_FAQS);
       setLocal('faqs', [...current, data[0]]);
       return data[0];
     }
   } catch (e) {}
+  newItem.id = `fq_${Date.now()}`;
   const current = getLocal('faqs', INITIAL_FAQS);
   const updated = [...current, newItem];
   setLocal('faqs', updated);
@@ -636,7 +712,10 @@ export async function createFaq(item) {
 
 export async function updateFaq(id, payload) {
   try {
-    await supabase.from('website_faqs').update(payload).eq('id', id);
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      await supabase.from('website_faqs').update(cleanPayload).eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('faqs', INITIAL_FAQS);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
@@ -646,7 +725,9 @@ export async function updateFaq(id, payload) {
 
 export async function deleteFaq(id) {
   try {
-    await supabase.from('website_faqs').delete().eq('id', id);
+    if (isValidUUID(id)) {
+      await supabase.from('website_faqs').delete().eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('faqs', INITIAL_FAQS);
   const updated = current.filter(item => item.id !== id);
@@ -674,7 +755,10 @@ export async function getWebsiteRequests() {
 
 export async function updateWebsiteRequest(id, payload) {
   try {
-    await supabase.from('website_requests').update(payload).eq('id', id);
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      await supabase.from('website_requests').update(cleanPayload).eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('requests', []);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
@@ -684,7 +768,9 @@ export async function updateWebsiteRequest(id, payload) {
 
 export async function deleteWebsiteRequest(id) {
   try {
-    await supabase.from('website_requests').delete().eq('id', id);
+    if (isValidUUID(id)) {
+      await supabase.from('website_requests').delete().eq('id', id);
+    }
   } catch (e) {}
   const current = getLocal('requests', []);
   const updated = current.filter(item => item.id !== id);
@@ -701,15 +787,7 @@ export async function getFormSettings() {
 }
 
 export async function updateFormSettings(payload) {
-  try {
-    const { data, error } = await supabase.from('website_form_settings').upsert([payload]).select();
-    if (!error && data && data[0]) {
-      setLocal('form_settings', [data[0]]);
-      return data[0];
-    }
-  } catch (e) {}
-  setLocal('form_settings', [payload]);
-  return payload;
+  return await updateSingletonSettings('website_form_settings', 'form_settings', payload);
 }
 
 // ---------------------------------------------------------
@@ -721,15 +799,7 @@ export async function getContactSettings() {
 }
 
 export async function updateContactSettings(payload) {
-  try {
-    const { data, error } = await supabase.from('website_contact_settings').upsert([payload]).select();
-    if (!error && data && data[0]) {
-      setLocal('contact_settings', [data[0]]);
-      return data[0];
-    }
-  } catch (e) {}
-  setLocal('contact_settings', [payload]);
-  return payload;
+  return await updateSingletonSettings('website_contact_settings', 'contact_settings', payload);
 }
 
 // ---------------------------------------------------------
@@ -741,15 +811,7 @@ export async function getFooterSettings() {
 }
 
 export async function updateFooterSettings(payload) {
-  try {
-    const { data, error } = await supabase.from('website_footer').upsert([payload]).select();
-    if (!error && data && data[0]) {
-      setLocal('footer_settings', [data[0]]);
-      return data[0];
-    }
-  } catch (e) {}
-  setLocal('footer_settings', [payload]);
-  return payload;
+  return await updateSingletonSettings('website_footer', 'footer_settings', payload);
 }
 
 // ---------------------------------------------------------
@@ -761,13 +823,5 @@ export async function getSeoSettings() {
 }
 
 export async function updateSeoSettings(payload) {
-  try {
-    const { data, error } = await supabase.from('website_seo').upsert([payload]).select();
-    if (!error && data && data[0]) {
-      setLocal('seo_settings', [data[0]]);
-      return data[0];
-    }
-  } catch (e) {}
-  setLocal('seo_settings', [payload]);
-  return payload;
+  return await updateSingletonSettings('website_seo', 'seo_settings', payload);
 }
