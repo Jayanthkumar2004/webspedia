@@ -155,109 +155,171 @@ export default function ToolsTable() {
       {/* EDIT MODAL */}
       {editingTool && (
         <div className="edit-modal-overlay">
-          <div className="edit-modal clay-card">
+          <div className="edit-modal clay-surface">
+            {/* STICKY HEADER */}
             <div className="edit-modal-header">
               <div className="modal-title-group">
-                <Edit3 size={18} />
-                <h3>Edit Tool Details</h3>
+                <div className="modal-header-icon-box clay-inset">
+                  <Edit3 size={18} className="header-icon" />
+                </div>
+                <div>
+                  <h3>Edit AI Tool</h3>
+                  <p className="modal-subtitle">Update tool metadata, links, and assets</p>
+                </div>
               </div>
-              <button className="close-btn clay-btn" onClick={() => setEditingTool(null)} type="button">
+              <button className="close-btn clay-pill" onClick={() => setEditingTool(null)} type="button" title="Close Modal">
                 <X size={16} />
               </button>
             </div>
 
-            <div className="edit-form-grid">
-              <div className="input-group">
-                <label>Tool Title</label>
-                <input
-                  type="text"
-                  name="title"
-                  className="clay-input"
-                  value={editingTool.title}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="input-group">
-                <label>Category</label>
-                <input
-                  type="text"
-                  name="category"
-                  className="clay-input"
-                  value={editingTool.category}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="input-group full-width">
-                <label>Tool URL</label>
-                <input
-                  type="text"
-                  name="tool_url"
-                  className="clay-input"
-                  value={editingTool.tool_url}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="input-group full-width">
-                <label>Image URL</label>
-                <input
-                  type="text"
-                  name="image_url"
-                  className="clay-input"
-                  value={editingTool.image_url}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="input-group full-width">
-                <label>Clicks / View Count</label>
-                <input
-                  type="number"
-                  name="views"
-                  className="clay-input"
-                  value={editingTool.views || 0}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="input-group full-width">
-                <label>Description</label>
-                <textarea
-                  rows="4"
-                  name="description"
-                  className="clay-input"
-                  value={editingTool.description || ''}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="input-group full-width">
-                <label>PDF Attachment</label>
-                <div className="upload-box-clay">
-                  <input type="file" accept=".pdf" onChange={handleFileUpload} />
-                  {uploading ? (
-                    <span>Uploading PDF...</span>
-                  ) : (
-                    <span>{editingTool.pdf_url ? 'PDF Uploaded' : 'Choose PDF File'}</span>
-                  )}
+            {/* LIVE PREVIEW BANNER */}
+            <div className="tool-edit-preview-banner clay-inset">
+              <img 
+                src={editingTool.image_url || DEFAULT_TOOL_ICON} 
+                alt={editingTool.title}
+                onError={(e) => handleImageError(e, DEFAULT_TOOL_ICON)}
+                className="edit-preview-img"
+              />
+              <div className="edit-preview-info">
+                <h4>{editingTool.title || "Untitled Tool"}</h4>
+                <div className="edit-preview-pills">
+                  <span className="table-category-pill">{editingTool.category || "Uncategorized"}</span>
+                  <span className="views-badge">
+                    <Eye size={12} /> {editingTool.views || 0} Clicks
+                  </span>
                 </div>
               </div>
             </div>
 
+            {/* SCROLLABLE FORM GRID */}
+            <div className="edit-form-scrollable">
+              {/* SECTION: BASIC INFO */}
+              <div className="form-section-title">Basic Information</div>
+              <div className="edit-form-grid-2col">
+                <div className="input-group">
+                  <label><Wrench size={13} /> Tool Title</label>
+                  <input
+                    type="text"
+                    name="title"
+                    className="clay-input"
+                    placeholder="Enter tool title..."
+                    value={editingTool.title || ''}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label><FileText size={13} /> Category</label>
+                  <input
+                    type="text"
+                    name="category"
+                    className="clay-input"
+                    placeholder="e.g. Writing, Coding, Design..."
+                    value={editingTool.category || ''}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              {/* SECTION: LINKS & ANALYTICS */}
+              <div className="form-section-title" style={{ marginTop: '16px' }}>Links & Analytics</div>
+              <div className="edit-form-grid-2col">
+                <div className="input-group">
+                  <label><ExternalLink size={13} /> Website URL</label>
+                  <input
+                    type="text"
+                    name="tool_url"
+                    className="clay-input"
+                    placeholder="https://..."
+                    value={editingTool.tool_url || ''}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label><Eye size={13} /> Clicks / Views Count</label>
+                  <input
+                    type="number"
+                    name="views"
+                    className="clay-input"
+                    value={editingTool.views || 0}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              {/* SECTION: ASSETS & MEDIA */}
+              <div className="form-section-title" style={{ marginTop: '16px' }}>Logo & Documentation</div>
+              <div className="edit-form-grid-2col">
+                <div className="input-group">
+                  <label><Upload size={13} /> Image / Logo URL</label>
+                  <input
+                    type="text"
+                    name="image_url"
+                    className="clay-input"
+                    placeholder="https://..."
+                    value={editingTool.image_url || ''}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label><FileText size={13} /> PDF Attachment</label>
+                  <div className="upload-box-clay clay-inset">
+                    <input type="file" accept=".pdf" onChange={handleFileUpload} id="edit-pdf-upload" style={{ display: 'none' }} />
+                    <label htmlFor="edit-pdf-upload" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', margin: 0 }}>
+                      <Upload size={14} color="var(--accent-primary)" />
+                      {uploading ? (
+                        <span>Uploading PDF...</span>
+                      ) : (
+                        <span>{editingTool.pdf_url ? 'Change PDF File' : 'Choose PDF File'}</span>
+                      )}
+                    </label>
+                  </div>
+                  {editingTool.pdf_url && (
+                    <a href={editingTool.pdf_url} target="_blank" rel="noreferrer" className="table-pdf-link" style={{ marginTop: '4px' }}>
+                      <FileText size={12} />
+                      <span>View Current PDF</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION: DESCRIPTION */}
+              <div className="form-section-title" style={{ marginTop: '16px' }}>Description</div>
+              <div className="input-group full-width">
+                <textarea
+                  rows="4"
+                  name="description"
+                  className="clay-input"
+                  placeholder="Comprehensive description of the tool..."
+                  value={editingTool.description || ''}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* STICKY FOOTER ACTIONS */}
             <div className="modal-footer">
-              <button className="clay-btn" onClick={() => setEditingTool(null)} type="button">
+              <button className="clay-button save-action-btn" onClick={() => setEditingTool(null)} type="button">
                 Cancel
               </button>
 
               <button
-                className="clay-btn-primary"
+                className="clay-button clay-button-primary"
                 onClick={handleUpdate}
                 disabled={loading || uploading}
                 type="button"
+                style={{ padding: '10px 24px' }}
               >
-                <span>{loading ? 'Saving...' : 'Save Changes'}</span>
+                {loading ? (
+                  <span>Saving Changes...</span>
+                ) : (
+                  <>
+                    <Check size={16} />
+                    <span>Save Changes</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
