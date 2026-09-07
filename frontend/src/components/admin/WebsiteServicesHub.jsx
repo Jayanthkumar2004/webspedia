@@ -28,7 +28,8 @@ import {
   Mail,
   Phone,
   Save,
-  Check
+  Check,
+  Share2
 } from 'lucide-react';
 import {
   getHeroSettings, updateHeroSettings,
@@ -43,11 +44,26 @@ import {
   getFormSettings, updateFormSettings,
   getContactSettings, updateContactSettings,
   getFooterSettings, updateFooterSettings,
-  getSeoSettings, updateSeoSettings
+  getSeoSettings, updateSeoSettings,
+  getSocialLinks, createSocialLink, updateSocialLink, deleteSocialLink
 } from '../../lib/websiteServicesApi';
 
-export default function WebsiteServicesHub() {
-  const [subTab, setSubTab] = useState('Dashboard');
+export default function WebsiteServicesHub({ initialTab = 'Dashboard' }) {
+  const mapTab = (tab) => {
+    if (tab === 'Website Portfolio') return 'Portfolio';
+    if (tab === 'Website Packages') return 'Pricing';
+    if (tab === 'Website Services') return 'Dashboard';
+    return tab || 'Dashboard';
+  };
+
+  const [subTab, setSubTab] = useState(() => mapTab(initialTab));
+
+  useEffect(() => {
+    if (initialTab) {
+      setSubTab(mapTab(initialTab));
+    }
+  }, [initialTab]);
+
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
 
@@ -65,6 +81,7 @@ export default function WebsiteServicesHub() {
   const [contactSettings, setContactSettings] = useState({});
   const [footerSettings, setFooterSettings] = useState({});
   const [seoSettings, setSeoSettings] = useState({});
+  const [socialLinks, setSocialLinks] = useState([]);
 
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,7 +89,7 @@ export default function WebsiteServicesHub() {
 
   // Modal / Form States
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(''); // 'service', 'audience', 'benefit', 'portfolio', 'package', 'process', 'faq', 'request_detail'
+  const [modalType, setModalType] = useState(''); // 'service', 'audience', 'benefit', 'portfolio', 'package', 'process', 'faq', 'request_detail', 'social'
   const [activeItem, setActiveItem] = useState(null);
 
   useEffect(() => {
@@ -82,7 +99,7 @@ export default function WebsiteServicesHub() {
   const loadAllData = async () => {
     setLoading(true);
     const [
-      h, s, a, b, p, pkg, pr, fq, req, fs, cs, ft, seo
+      h, s, a, b, p, pkg, pr, fq, req, fs, cs, ft, seo, soc
     ] = await Promise.all([
       getHeroSettings(),
       getServices(),
@@ -96,7 +113,8 @@ export default function WebsiteServicesHub() {
       getFormSettings(),
       getContactSettings(),
       getFooterSettings(),
-      getSeoSettings()
+      getSeoSettings(),
+      getSocialLinks()
     ]);
 
     if (h) setHero(h);
@@ -112,6 +130,7 @@ export default function WebsiteServicesHub() {
     if (cs) setContactSettings(cs);
     if (ft) setFooterSettings(ft);
     if (seo) setSeoSettings(seo);
+    if (soc) setSocialLinks(soc);
     setLoading(false);
   };
 
@@ -134,6 +153,7 @@ export default function WebsiteServicesHub() {
     { id: 'FAQs', label: 'FAQs', icon: <HelpCircle size={16} /> },
     { id: 'Form Settings', label: 'Form Settings', icon: <Settings size={16} /> },
     { id: 'Contact Settings', label: 'Contact Settings', icon: <PhoneCall size={16} /> },
+    { id: 'Social Links', label: 'Social Media Links', icon: <Share2 size={16} /> },
     { id: 'Footer', label: 'Footer Settings', icon: <Globe size={16} /> },
     { id: 'SEO', label: 'SEO Settings', icon: <Search size={16} /> }
   ];
@@ -248,6 +268,13 @@ export default function WebsiteServicesHub() {
     } else if (modalType === 'request_detail') {
       await updateWebsiteRequest(activeItem.id, activeItem);
       setRequests(await getWebsiteRequests());
+    } else if (modalType === 'social') {
+      if (activeItem.id) {
+        await updateSocialLink(activeItem.id, activeItem);
+      } else {
+        await createSocialLink(activeItem);
+      }
+      setSocialLinks(await getSocialLinks());
     }
 
     setModalOpen(false);
@@ -281,6 +308,9 @@ export default function WebsiteServicesHub() {
     } else if (type === 'request') {
       await deleteWebsiteRequest(id);
       setRequests(await getWebsiteRequests());
+    } else if (type === 'social') {
+      await deleteSocialLink(id);
+      setSocialLinks(await getSocialLinks());
     }
     showNotification('Item deleted successfully!');
   };
@@ -871,7 +901,52 @@ export default function WebsiteServicesHub() {
       )}
 
       {/* ========================================================= */}
-      {/* 13. FOOTER SETTINGS */}
+      {/* 13. SOCIAL LINKS MAINTAINANCE */}
+      {/* ========================================================= */}
+      {subTab === 'Social Links' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>Social Media Links Maintenance</h3>
+            <ClayButton variant="primary" onClick={() => handleOpenModal('social', { platform: '', url: '', icon: 'Share2', display_order: socialLinks.length + 1, is_active: true })}>
+              <Plus size={16} />
+              <span>Add Social Link</span>
+            </ClayButton>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+            {socialLinks.map(item => (
+              <ClayCard key={item.id || item.platform} style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Share2 size={18} color="var(--accent-primary)" />
+                    <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800' }}>{item.platform}</h4>
+                  </div>
+                  <ClayBadge style={{ background: item.is_active !== false ? 'var(--clay-badge-bg)' : '#9CA3AF' }}>
+                    {item.is_active !== false ? 'Active' : 'Hidden'}
+                  </ClayBadge>
+                </div>
+                <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', color: 'var(--accent-primary)', wordBreak: 'break-all', textDecoration: 'none' }}>
+                  {item.url}
+                </a>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '8px', borderTop: 'var(--clay-border-subtle)' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Order: #{item.display_order || 1} | Icon: {item.icon || 'Share2'}</span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <ClayButton size="sm" onClick={() => handleOpenModal('social', item)}>
+                      <Pencil size={14} />
+                    </ClayButton>
+                    <ClayButton size="sm" onClick={() => handleDeleteItem('social', item.id)}>
+                      <Trash2 size={14} />
+                    </ClayButton>
+                  </div>
+                </div>
+              </ClayCard>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 14. FOOTER SETTINGS */}
       {/* ========================================================= */}
       {subTab === 'Footer' && (
         <ClayCard elevated style={{ padding: '24px' }}>
@@ -895,7 +970,7 @@ export default function WebsiteServicesHub() {
       )}
 
       {/* ========================================================= */}
-      {/* 14. SEO SETTINGS */}
+      {/* 15. SEO SETTINGS */}
       {/* ========================================================= */}
       {subTab === 'SEO' && (
         <ClayCard elevated style={{ padding: '24px' }}>
@@ -936,6 +1011,43 @@ export default function WebsiteServicesHub() {
             </div>
 
             <form onSubmit={handleSaveItemModal} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* SOCIAL LINK FIELDS */}
+              {modalType === 'social' && (
+                <>
+                  <div>
+                    <label>Platform Name *</label>
+                    <ClayInput required placeholder="e.g. Twitter / X, LinkedIn, WhatsApp" value={activeItem.platform || ''} onChange={e => setActiveItem({ ...activeItem, platform: e.target.value })} />
+                  </div>
+                  <div>
+                    <label>Destination URL *</label>
+                    <ClayInput required placeholder="https://..." value={activeItem.url || ''} onChange={e => setActiveItem({ ...activeItem, url: e.target.value })} />
+                  </div>
+                  <div>
+                    <label>Lucide Icon Name</label>
+                    <select className="clay-input" value={activeItem.icon || 'Globe'} onChange={e => setActiveItem({ ...activeItem, icon: e.target.value })}>
+                      <option value="Globe">Globe (Default Web)</option>
+                      <option value="Share2">Share2 (Social Network)</option>
+                      <option value="MessageCircle">MessageCircle (WhatsApp / Chat)</option>
+                      <option value="Send">Send (Telegram / Direct)</option>
+                      <option value="Mail">Mail (Email Contact)</option>
+                      <option value="Phone">Phone (Call Contact)</option>
+                      <option value="ExternalLink">ExternalLink (External Web)</option>
+                      <option value="Link">Link (Generic Link)</option>
+                      <option value="AtSign">AtSign (Handle / Account)</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label>Display Order</label>
+                      <ClayInput type="number" value={activeItem.display_order ?? 1} onChange={e => setActiveItem({ ...activeItem, display_order: parseInt(e.target.value) || 1 })} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '24px' }}>
+                      <input type="checkbox" id="social_active" checked={activeItem.is_active !== false} onChange={e => setActiveItem({ ...activeItem, is_active: e.target.checked })} />
+                      <label htmlFor="social_active" style={{ cursor: 'pointer', margin: 0 }}>Is Active</label>
+                    </div>
+                  </div>
+                </>
+              )}
               {/* SERVICE FIELDS */}
               {modalType === 'service' && (
                 <>

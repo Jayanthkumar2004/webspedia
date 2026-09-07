@@ -172,7 +172,7 @@ export default function AdminDashboard() {
         {/* WEBSITE SERVICES HUB */}
         {(active === "Website Services" || active === "Website Requests" || active === "Website Portfolio" || active === "Website Packages") && (
           <div className="website-services-tab-view">
-            <WebsiteServicesHub />
+            <WebsiteServicesHub initialTab={active} />
           </div>
         )}
 

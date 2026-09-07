@@ -825,3 +825,60 @@ export async function getSeoSettings() {
 export async function updateSeoSettings(payload) {
   return await updateSingletonSettings('website_seo', 'seo_settings', payload);
 }
+
+// ---------------------------------------------------------
+// 14. SOCIAL MEDIA LINKS API
+// ---------------------------------------------------------
+export const INITIAL_SOCIAL_LINKS = [
+  { id: 'soc-1', platform: 'Twitter / X', url: 'https://twitter.com', icon: 'Twitter', display_order: 1, is_active: true },
+  { id: 'soc-2', platform: 'LinkedIn', url: 'https://linkedin.com', icon: 'Linkedin', display_order: 2, is_active: true },
+  { id: 'soc-3', platform: 'GitHub', url: 'https://github.com', icon: 'Github', display_order: 3, is_active: true },
+  { id: 'soc-4', platform: 'Instagram', url: 'https://instagram.com', icon: 'Instagram', display_order: 4, is_active: true }
+];
+
+export async function getSocialLinks() {
+  return await fetchGeneric('social_media_links', 'social_links', INITIAL_SOCIAL_LINKS);
+}
+
+export async function createSocialLink(item) {
+  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const cleanPayload = sanitizePayload(newItem);
+  try {
+    const { data, error } = await supabase.from('social_media_links').insert([cleanPayload]).select();
+    if (!error && data && data[0]) {
+      const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
+      setLocal('social_links', [...current, data[0]]);
+      return data[0];
+    }
+  } catch (e) {}
+  newItem.id = `soc_${Date.now()}`;
+  const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
+  const updated = [...current, newItem];
+  setLocal('social_links', updated);
+  return newItem;
+}
+
+export async function updateSocialLink(id, payload) {
+  try {
+    if (isValidUUID(id)) {
+      const cleanPayload = sanitizePayload(payload);
+      await supabase.from('social_media_links').update(cleanPayload).eq('id', id);
+    }
+  } catch (e) {}
+  const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
+  const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
+  setLocal('social_links', updated);
+  return true;
+}
+
+export async function deleteSocialLink(id) {
+  try {
+    if (isValidUUID(id)) {
+      await supabase.from('social_media_links').delete().eq('id', id);
+    }
+  } catch (e) {}
+  const current = getLocal('social_links', INITIAL_SOCIAL_LINKS);
+  const updated = current.filter(item => item.id !== id);
+  setLocal('social_links', updated);
+  return true;
+}
