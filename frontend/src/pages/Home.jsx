@@ -5,6 +5,7 @@ import BannerSlider from '../components/BannerSlider';
 import PromotedWebsites from '../components/PromotedWebsites';
 import FeedbackSection from '../components/FeedbackSection';
 import Footer from '../components/Footer';
+import SearchBar from '../components/SearchBar';
 import { supabase } from '../lib/supabase';
 import { Search, ChevronLeft, ChevronRight, Sparkles, Cpu, Code, PenTool, Flame, Layers, X, RotateCcw } from 'lucide-react';
 import '../styles/home.css';
@@ -192,41 +193,17 @@ export default function Home() {
               Explore curated artificial intelligence software, read community reviews, bookmark your favorites, and boost your workflow.
             </p>
 
-            {/* PROFESSIONAL SEARCH CONTAINER */}
-            <form className="search-container" onSubmit={handleSearchSubmit}>
-              <div className="search-input-wrapper clay-inset">
-                <Search className="search-icon" size={18} />
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search AI tools by title, category, feature..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-                {search && (
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    style={{
-                      border: 'none',
-                      background: 'none',
-                      color: 'var(--text-muted)',
-                      cursor: 'pointer',
-                      padding: '4px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      marginRight: '6px'
-                    }}
-                    title="Clear search"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-              <button className="search-btn clay-button-primary" type="submit" onClick={handleExploreClick}>
-                <span>Explore</span>
-              </button>
-            </form>
+            {/* UPGRADED 3D CLAYMORPHISM SEARCH BAR */}
+            <SearchBar
+              search={search}
+              setSearch={setSearch}
+              category={category}
+              setCategory={setCategory}
+              categories={categories}
+              tools={tools}
+              onSearchSubmit={handleSearchSubmit}
+              showTrending={true}
+            />
 
             {/* PROFESSIONAL METRIC STATS ROW */}
             <div className="hero-stats-row">

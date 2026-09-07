@@ -68,51 +68,21 @@
   max-width: 520px;
 }
 
-/* PROFESSIONAL SEARCH BAR */
+/* PROFESSIONAL SEARCH BAR COMPONENT WRAPPER */
 .search-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   width: 100%;
-  max-width: 540px;
+  max-width: 580px;
   margin-bottom: 24px;
 }
 
-.search-input-wrapper {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  border-radius: var(--radius-pill);
-  background: var(--clay-surface-recessed);
-  box-shadow: var(--inset-dark-sm), var(--inset-light-sm);
-  padding: 4px 6px 4px 18px;
-  border: var(--clay-border-subtle);
-}
-
-.search-icon {
-  color: var(--text-muted);
-  flex-shrink: 0;
-  margin-right: 10px;
-}
-
-.search-input {
-  width: 100%;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  padding: 10px 0;
-}
-
-.search-btn {
-  padding: 12px 24px;
-  border-radius: var(--radius-pill);
-  font-size: 14px;
-  font-weight: 800;
-  flex-shrink: 0;
+.search-input-wrapper input[type="text"],
+.search-input-wrapper input.search-input,
+input.search-input-field {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
 }
 
 /* HERO METRICS STATS ROW */
