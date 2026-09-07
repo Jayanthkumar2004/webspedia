@@ -44,23 +44,33 @@ export default function WebsiteRequestsManager() {
   const [followUpDate, setFollowUpDate] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
 
-  const normalizePhoneNumber = (phoneStr) => {
-    if (!phoneStr) return '';
-    let cleaned = phoneStr.trim().replace(/[\s\-\(\)\.\,]/g, '');
-    if (cleaned.startsWith('+')) {
-      cleaned = cleaned.substring(1);
+  const normalizeWhatsAppNumber = (phone) => {
+    if (!phone) return null;
+
+    let number = String(phone).trim();
+
+    // Remove spaces, brackets, hyphens and other formatting
+    number = number.replace(/[^\d+]/g, '');
+
+    // Remove leading +
+    number = number.replace(/^\+/, '');
+
+    // Handle leading 0 (e.g. 09876543210 -> 9876543210)
+    if (number.length === 11 && number.startsWith('0')) {
+      number = number.substring(1);
     }
-    cleaned = cleaned.replace(/\D/g, '');
-    if (cleaned.length === 11 && cleaned.startsWith('0')) {
-      cleaned = cleaned.substring(1);
+
+    // If 10 digits (common Indian number entered without country code prefix), prepend 91
+    if (number.length === 10) {
+      number = `91${number}`;
     }
-    if (cleaned.length === 10) {
-      cleaned = `91${cleaned}`;
+
+    // Validate digit length (between 10 and 15 digits)
+    if (number.length < 10 || number.length > 15) {
+      return null;
     }
-    if (cleaned.length < 10 || cleaned.length > 15) {
-      return '';
-    }
-    return cleaned;
+
+    return number;
   };
 
   const getDefaultWaMessage = (req) => {
@@ -73,20 +83,39 @@ export default function WebsiteRequestsManager() {
   };
 
   const openSendWaModal = (req) => {
+    if (!req || !req.phone) {
+      alert("Client WhatsApp number is not available.");
+      return;
+    }
+    const phone = normalizeWhatsAppNumber(req.phone);
+    if (!phone) {
+      alert("Please check the client's WhatsApp number.");
+      return;
+    }
     setWaTargetReq(req);
     setWaCustomMessage(getDefaultWaMessage(req));
     setWaModalOpen(true);
   };
 
   const handleDispatchWa = () => {
-    if (!waTargetReq) return;
-    const cleanNum = normalizePhoneNumber(waTargetReq.phone);
-    if (!cleanNum) {
-      alert("Invalid or missing phone number for this client.");
+    if (!waTargetReq || !waTargetReq.phone) {
+      alert("Client WhatsApp number is not available.");
       return;
     }
-    const url = `https://wa.me/${cleanNum}?text=${encodeURIComponent(waCustomMessage)}`;
-    window.open(url, '_blank');
+
+    const phone = normalizeWhatsAppNumber(waTargetReq.phone);
+
+    if (!phone) {
+      alert("Please check the client's WhatsApp number.");
+      return;
+    }
+
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(waCustomMessage)}`;
+
+    console.log('Client phone:', phone);
+    console.log('WhatsApp URL:', whatsappUrl);
+
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     setWaModalOpen(false);
   };
 
