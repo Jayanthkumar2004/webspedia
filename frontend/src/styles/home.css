@@ -324,11 +324,6 @@ input.search-input-field {
   }
 
   .search-container {
-    flex-direction: column !important;
-    width: 100% !important;
-  }
-
-  .search-btn {
     width: 100% !important;
   }
 

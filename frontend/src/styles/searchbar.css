@@ -347,3 +347,113 @@ input.search-input-field {
   transform: translateY(-2px) !important;
   box-shadow: var(--shadow-dark), var(--shadow-light) !important;
 }
+
+/* =========================================================
+   MOBILE RESPONSIVE ADAPTATIONS
+========================================================= */
+
+@media (max-width: 768px) {
+  .search-bar-root {
+    max-width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .search-shortcut-badge {
+    display: none !important;
+  }
+
+  .search-category-select-wrapper select.search-category-select {
+    max-width: 105px;
+    font-size: 12px !important;
+    padding: 6px 18px 6px 2px !important;
+  }
+
+  .search-category-select-wrapper {
+    padding-left: 8px;
+  }
+
+  .search-input-inner input[type="text"].search-input-field,
+  .search-input-inner input.search-input-field,
+  input.search-input-field {
+    font-size: 13px !important;
+    padding: 8px 2px !important;
+  }
+
+  .search-submit-btn {
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-container-clay {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .search-category-select-wrapper {
+    padding-left: 6px;
+  }
+
+  .search-category-select-wrapper select.search-category-select {
+    max-width: 85px;
+    font-size: 11px !important;
+    padding: 6px 14px 6px 0 !important;
+  }
+
+  .category-select-arrow {
+    right: 2px;
+  }
+
+  .search-icon-clay {
+    margin-right: 4px;
+  }
+
+  .search-input-inner {
+    padding-left: 4px;
+  }
+
+  .search-input-inner input[type="text"].search-input-field,
+  .search-input-inner input.search-input-field,
+  input.search-input-field {
+    font-size: 13px !important;
+    padding: 8px 0 !important;
+  }
+
+  .search-submit-btn {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .search-suggestions-dropdown {
+    padding: 10px;
+    border-radius: var(--radius-md);
+  }
+
+  .suggestion-item {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .suggestion-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .suggestion-title {
+    font-size: 13px;
+  }
+
+  .suggestion-desc {
+    font-size: 11px;
+  }
+
+  .trending-label {
+    font-size: 11px;
+  }
+
+  .trending-chip-clay {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+  }
+}
