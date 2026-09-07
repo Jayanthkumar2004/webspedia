@@ -254,35 +254,7 @@ export default function WebsiteServices() {
         console.warn('Supabase insert warning:', insertErr.message);
       }
 
-      // 1. Format admin phone number for WhatsApp
-      const adminPhoneFormatted = normalizePhoneNumber(contactSettings?.whatsapp_number || '+919876543210');
-
-      // 2. Admin WhatsApp Message (with structured client request details)
-      const adminWaMessage = `*New Website Request - Webspedia* 🚀\n\n` +
-        `*Name:* ${form.full_name.trim()}\n` +
-        `*Phone:* ${form.phone.trim()}\n` +
-        `*Email:* ${form.email.trim()}\n` +
-        `*Business Name:* ${form.business_name.trim()}\n` +
-        `*Website Type:* ${form.website_type}\n` +
-        `*Preferred Contact:* ${form.preferred_contact_method}\n` +
-        `*Budget:* ${form.budget}\n` +
-        (form.deadline.trim() ? `*Deadline:* ${form.deadline.trim()}\n` : '') +
-        `*Project Details:* ${form.project_description.trim()}\n\n` +
-        `Thank you!`;
-
-      const adminWaUrl = `https://wa.me/${adminPhoneFormatted}?text=${encodeURIComponent(adminWaMessage)}`;
-
-      setLastAdminWaUrl(adminWaUrl);
       setSubmitted(true);
-
-      // Automatically trigger WhatsApp redirect to connect client with Webspedia Admin
-      try {
-        if (adminWaUrl) {
-          window.open(adminWaUrl, '_blank');
-        }
-      } catch (err) {
-        console.log('WhatsApp open error:', err);
-      }
 
       setForm({
         full_name: '',
@@ -667,20 +639,7 @@ export default function WebsiteServices() {
                   {formSettings.success_message || 'Thank you! Your website request has been saved and sent.'}
                 </p>
 
-                {lastAdminWaUrl && (
-                  <a
-                    href={lastAdminWaUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="clay-button-primary"
-                    style={{ textDecoration: 'none', background: '#25D366', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: 'var(--radius-pill)', fontWeight: '800', fontSize: '14px', marginTop: '6px' }}
-                  >
-                    <MessageCircle size={18} />
-                    <span>Send Request Details on WhatsApp</span>
-                  </a>
-                )}
-
-                <ClayButton size="sm" onClick={() => setSubmitted(false)} style={{ marginTop: '8px' }}>
+                <ClayButton size="sm" onClick={() => setSubmitted(false)} style={{ marginTop: '12px' }}>
                   Submit Another Request
                 </ClayButton>
               </div>

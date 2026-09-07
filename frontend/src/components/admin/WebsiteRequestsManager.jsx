@@ -31,6 +31,11 @@ export default function WebsiteRequestsManager() {
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Send WhatsApp customization modal states
+  const [waModalOpen, setWaModalOpen] = useState(false);
+  const [waTargetReq, setWaTargetReq] = useState(null);
+  const [waCustomMessage, setWaCustomMessage] = useState('');
+
   // Edit fields
   const [status, setStatus] = useState('NEW');
   const [priority, setPriority] = useState('MEDIUM');
@@ -38,6 +43,52 @@ export default function WebsiteRequestsManager() {
   const [adminNotes, setAdminNotes] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
+
+  const normalizePhoneNumber = (phoneStr) => {
+    if (!phoneStr) return '';
+    let cleaned = phoneStr.trim().replace(/[\s\-\(\)\.\,]/g, '');
+    if (cleaned.startsWith('+')) {
+      cleaned = cleaned.substring(1);
+    }
+    cleaned = cleaned.replace(/\D/g, '');
+    if (cleaned.length === 11 && cleaned.startsWith('0')) {
+      cleaned = cleaned.substring(1);
+    }
+    if (cleaned.length === 10) {
+      cleaned = `91${cleaned}`;
+    }
+    if (cleaned.length < 10 || cleaned.length > 15) {
+      return '';
+    }
+    return cleaned;
+  };
+
+  const getDefaultWaMessage = (req) => {
+    return `Hi! 👋\n\n` +
+      `Thank you for choosing Webspedia! 🚀\n\n` +
+      `We’ve successfully received your website request.\n\n` +
+      `Our team has reviewed your requirements and will get back to you shortly.\n\n` +
+      `Thank you for trusting Webspedia. We’re excited to help bring your website idea to life! 💻✨\n\n` +
+      `— Team Webspedia`;
+  };
+
+  const openSendWaModal = (req) => {
+    setWaTargetReq(req);
+    setWaCustomMessage(getDefaultWaMessage(req));
+    setWaModalOpen(true);
+  };
+
+  const handleDispatchWa = () => {
+    if (!waTargetReq) return;
+    const cleanNum = normalizePhoneNumber(waTargetReq.phone);
+    if (!cleanNum) {
+      alert("Invalid or missing phone number for this client.");
+      return;
+    }
+    const url = `https://wa.me/${cleanNum}?text=${encodeURIComponent(waCustomMessage)}`;
+    window.open(url, '_blank');
+    setWaModalOpen(false);
+  };
 
   useEffect(() => {
     fetchRequests();
@@ -358,18 +409,16 @@ export default function WebsiteRequestsManager() {
                           <Phone size={15} />
                         </a>
 
-                        {/* QUICK WHATSAPP */}
-                        {cleanPhone && (
-                          <a
-                            href={`https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(`Hi ${req.full_name}! 👋\nThank you for choosing Webspedia! 🚀\nWe’ve successfully received your website request for ${req.business_name}.\nOur team will review your requirements and get back to you shortly.\nThank you for trusting Webspedia. We’re excited to help bring your website idea to life! 💻✨\n— Team Webspedia`)}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="Send Thank You Message to Client on WhatsApp"
-                            style={{ width: "32px", height: "32px", flexShrink: 0, borderRadius: "8px", background: "rgba(16, 185, 129, 0.12)", color: "#10b981", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
-                          >
-                            <MessageCircle size={15} />
-                          </a>
-                        )}
+                        {/* SEND WHATSAPP TO CLIENT */}
+                        <ClayButton
+                          size="sm"
+                          onClick={() => openSendWaModal(req)}
+                          title="Send WhatsApp Message to Client"
+                          style={{ background: "#25D366", color: "#ffffff", border: "none", gap: "5px", fontWeight: "800", display: "inline-flex", alignItems: "center", padding: "6px 12px", borderRadius: "8px", fontSize: "12px" }}
+                        >
+                          <MessageCircle size={14} />
+                          <span>Send WhatsApp</span>
+                        </ClayButton>
 
                         {/* QUICK EMAIL */}
                         <a
@@ -544,18 +593,19 @@ export default function WebsiteRequestsManager() {
                   <span>Delete Request</span>
                 </ClayButton>
 
-                <div style={{ display: "flex", gap: "10px" }}>
-                  {formatCleanPhone(selectedReq.phone) && (
-                    <a
-                      href={`https://wa.me/${formatCleanPhone(selectedReq.phone).length === 10 ? '91' + formatCleanPhone(selectedReq.phone) : formatCleanPhone(selectedReq.phone)}?text=${encodeURIComponent(`Hi ${selectedReq.full_name}! 👋\nThank you for choosing Webspedia! 🚀\nWe’ve successfully received your website request for ${selectedReq.business_name}.\nOur team will review your requirements and get back to you shortly.\nThank you for trusting Webspedia. We’re excited to help bring your website idea to life! 💻✨\n— Team Webspedia`)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ textDecoration: 'none', background: '#25D366', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: '800' }}
-                    >
-                      <MessageCircle size={15} />
-                      <span>Send WhatsApp Thank You</span>
-                    </a>
-                  )}
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <ClayButton
+                    type="button"
+                    onClick={() => {
+                      setShowModal(false);
+                      openSendWaModal(selectedReq);
+                    }}
+                    style={{ background: "#25D366", color: "#ffffff", border: "none", display: "inline-flex", alignItems: "center", gap: "6px", fontWeight: "800" }}
+                  >
+                    <MessageCircle size={15} />
+                    <span>Send WhatsApp</span>
+                  </ClayButton>
+
                   <ClayButton type="button" onClick={() => setShowModal(false)}>Cancel</ClayButton>
                   <ClayButton variant="primary" type="submit" disabled={submitting}>
                     <span>{submitting ? 'Saving...' : 'Save Updates'}</span>
@@ -563,6 +613,62 @@ export default function WebsiteRequestsManager() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* SEND WHATSAPP CUSTOMIZATION MODAL */}
+      {waModalOpen && waTargetReq && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)",
+          zIndex: 10001, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px"
+        }} onClick={() => setWaModalOpen(false)}>
+          <div className="clay-card" style={{ width: "100%", maxWidth: "540px", padding: "24px", background: "var(--clay-surface)" }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingBottom: "12px", borderBottom: "var(--clay-border-subtle)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <MessageCircle size={22} color="#25D366" />
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "900", color: "var(--text-primary)" }}>
+                  Send WhatsApp Message
+                </h3>
+              </div>
+              <ClayButton size="sm" onClick={() => setWaModalOpen(false)}>
+                <X size={16} />
+              </ClayButton>
+            </div>
+
+            <div style={{ background: "var(--clay-surface-raised)", padding: "12px 16px", borderRadius: "10px", marginBottom: "16px", fontSize: "13px" }}>
+              <div style={{ fontWeight: "800", color: "var(--text-primary)" }}>Client: {waTargetReq.full_name}</div>
+              <div style={{ color: "var(--text-secondary)", fontSize: "12px", marginTop: "2px" }}>Phone / WhatsApp: <strong>{waTargetReq.phone}</strong></div>
+              <div style={{ color: "var(--accent-primary)", fontSize: "12px", marginTop: "2px" }}>Business: {waTargetReq.business_name || 'N/A'} ({waTargetReq.website_type})</div>
+            </div>
+
+            <div style={{ marginBottom: "18px" }}>
+              <label style={{ fontSize: "12px", fontWeight: "800", color: "var(--text-secondary)", display: "block", marginBottom: "6px" }}>
+                Review / Edit Message:
+              </label>
+              <textarea
+                className="clay-input"
+                rows="8"
+                value={waCustomMessage}
+                onChange={e => setWaCustomMessage(e.target.value)}
+                style={{ width: "100%", resize: "vertical", fontSize: "13px", lineHeight: "1.5" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <ClayButton type="button" onClick={() => setWaModalOpen(false)}>
+                Cancel
+              </ClayButton>
+              <ClayButton
+                type="button"
+                onClick={handleDispatchWa}
+                style={{ background: "#25D366", color: "#ffffff", fontWeight: "800", display: "inline-flex", alignItems: "center", gap: "8px" }}
+              >
+                <MessageCircle size={16} />
+                <span>Open WhatsApp</span>
+              </ClayButton>
+            </div>
           </div>
         </div>
       )}
