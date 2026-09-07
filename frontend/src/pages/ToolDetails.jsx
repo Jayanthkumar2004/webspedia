@@ -105,13 +105,37 @@ export default function ToolDetails() {
       .eq('tool_id', id)
       .order('created_at', { ascending: false });
 
-    setComments(commentsData || []);
-
     // Fetch ratings directly from database 'ratings' table
     const { data: ratingsData } = await supabase
       .from('ratings')
-      .select('rating')
-      .eq('tool_id', id);
+      .select('*')
+      .eq('tool_id', id)
+      .order('created_at', { ascending: false });
+
+    // Build map of user_id -> rating
+    const userRatingsMap = {};
+    if (ratingsData && ratingsData.length > 0) {
+      ratingsData.forEach(r => {
+        if (r.user_id && !userRatingsMap[r.user_id]) {
+          userRatingsMap[r.user_id] = Number(r.rating || 5);
+        }
+      });
+    }
+
+    // Attach rating to each comment object
+    const enrichedComments = (commentsData || []).map((c, idx) => {
+      let ratingVal = Number(c.rating || 0);
+      if (!ratingVal && c.user_id && userRatingsMap[c.user_id]) {
+        ratingVal = userRatingsMap[c.user_id];
+      }
+      if (!ratingVal && ratingsData && ratingsData[idx]) {
+        ratingVal = Number(ratingsData[idx].rating || 5);
+      }
+      if (!ratingVal) ratingVal = 5;
+      return { ...c, rating: ratingVal };
+    });
+
+    setComments(enrichedComments);
 
     if (ratingsData && ratingsData.length > 0) {
       const sum = ratingsData.reduce((acc, r) => acc + Number(r.rating || 0), 0);
@@ -121,6 +145,18 @@ export default function ToolDetails() {
       const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
       ratingsData.forEach(r => {
         const val = Math.min(5, Math.max(1, Math.round(Number(r.rating || 5))));
+        if (dist[val] !== undefined) dist[val]++;
+      });
+      setRatingsDistribution(dist);
+    } else if (enrichedComments.length > 0) {
+      const mainComms = enrichedComments.filter(c => !c.parent_id);
+      const sum = mainComms.reduce((acc, c) => acc + Number(c.rating || 5), 0);
+      const avg = mainComms.length > 0 ? (sum / mainComms.length).toFixed(1) : "0.0";
+      setAvgRating(avg);
+
+      const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      mainComms.forEach(c => {
+        const val = Math.min(5, Math.max(1, Math.round(Number(c.rating || 5))));
         if (dist[val] !== undefined) dist[val]++;
       });
       setRatingsDistribution(dist);
@@ -169,18 +205,23 @@ export default function ToolDetails() {
       .eq("id", user.id)
       .single();
 
-    // Insert review comment
-    await supabase.from('comments').insert([{
-      tool_id: id,
-      user_id: user.id,
-      username: profile?.username || "User",
-      avatar_url: profile?.avatar_url || "",
-      content: newComment,
-      parent_id: null,
-      likes: 0
-    }]);
+    // Insert review comment including userRating
+    try {
+      await supabase.from('comments').insert([{
+        tool_id: id,
+        user_id: user.id,
+        username: profile?.username || "User",
+        avatar_url: profile?.avatar_url || "",
+        content: newComment,
+        rating: userRating,
+        parent_id: null,
+        likes: 0
+      }]);
+    } catch (e) {
+      console.warn('Comment insert with rating fallback:', e);
+    }
 
-    // Insert star rating into database
+    // Insert star rating into ratings table
     await supabase.from('ratings').insert([{
       tool_id: id,
       user_id: user.id,
@@ -439,7 +480,12 @@ export default function ToolDetails() {
 
                   <div className="review-stars-row">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} size={13} fill="#facc15" color="#facc15" />
+                      <Star
+                        key={s}
+                        size={13}
+                        fill={s <= Number(c.rating || 5) ? "#facc15" : "none"}
+                        color={s <= Number(c.rating || 5) ? "#facc15" : "var(--text-muted)"}
+                      />
                     ))}
                   </div>
                 </div>
