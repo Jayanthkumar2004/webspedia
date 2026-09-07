@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { getPlatformVisitsCount } from '../../lib/analyticsTracker';
 import { ClayCard, ClayBadge } from '../clay';
 import { Wrench, Eye, Heart, Users, TrendingUp } from 'lucide-react';
 import '../../styles/stats.css';
@@ -27,11 +28,12 @@ export default function StatsCards() {
       .select('*', { count: 'exact', head: true });
     toolsCount = tCount || 0;
 
-    const { data: toolsData } = await supabase.from('tools').select('views, likes');
+    const { data: toolsData } = await supabase.from('tools').select('likes');
     if (toolsData) {
-      visitsCount = toolsData.reduce((acc, item) => acc + Number(item.views || 0), 0);
       likesCount = toolsData.reduce((acc, item) => acc + Number(item.likes || 0), 0);
     }
+
+    visitsCount = await getPlatformVisitsCount();
 
     const { count: uCount } = await supabase
       .from('profiles')

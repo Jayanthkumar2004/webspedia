@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
+import { trackToolClick } from '../lib/analyticsTracker';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
 import '../styles/toolcard.css';
 
@@ -90,6 +91,7 @@ export default function ToolCard({ tool }) {
   };
 
   const goToDetails = () => {
+    trackToolClick(tool.id);
     navigate(`/tool/${tool.id}`);
   };
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink, Search } from 'lucide-react';
+import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink, Search, Eye } from 'lucide-react';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../../utils/placeholder';
 import { ClayInput } from '../clay';
 import '../../styles/ToolsTable.css';
@@ -90,7 +90,8 @@ export default function ToolsTable() {
         tool_url: editingTool.tool_url,
         image_url: editingTool.image_url,
         pdf_url: editingTool.pdf_url,
-        description: editingTool.description
+        description: editingTool.description,
+        views: Number(editingTool.views || 0)
       })
       .eq('id', editingTool.id);
 
@@ -211,6 +212,17 @@ export default function ToolsTable() {
               </div>
 
               <div className="input-group full-width">
+                <label>Clicks / View Count</label>
+                <input
+                  type="number"
+                  name="views"
+                  className="clay-input"
+                  value={editingTool.views || 0}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="input-group full-width">
                 <label>Description</label>
                 <textarea
                   rows="4"
@@ -260,6 +272,7 @@ export default function ToolsTable() {
               <th>Image</th>
               <th>Title</th>
               <th>Category</th>
+              <th>Clicks / Views</th>
               <th>PDF</th>
               <th>Actions</th>
             </tr>
@@ -284,6 +297,13 @@ export default function ToolsTable() {
 
                   <td>
                     <span className="table-category-pill">{tool.category || "AI Tool"}</span>
+                  </td>
+
+                  <td>
+                    <span className="table-category-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--clay-surface-recessed)', fontWeight: '800' }}>
+                      <Eye size={12} color="var(--accent-primary)" />
+                      <span>{tool.views || 0} Clicks</span>
+                    </span>
                   </td>
 
                   <td>

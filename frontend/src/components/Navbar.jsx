@@ -14,6 +14,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { trackPlatformVisit } from '../lib/analyticsTracker';
 import '../styles/navbar.css';
 
 export default function Navbar() {
@@ -25,6 +26,8 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    trackPlatformVisit(window.location.pathname);
+
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
       const currentUser = data?.user;

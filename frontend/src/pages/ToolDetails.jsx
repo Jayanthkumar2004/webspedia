@@ -19,6 +19,7 @@ import {
   Share2,
   Bookmark
 } from 'lucide-react';
+import { trackToolClick } from '../lib/analyticsTracker';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
 import '../styles/tooldetails.css';
 
@@ -45,6 +46,8 @@ export default function ToolDetails() {
     let channel;
 
     const init = async () => {
+      if (id) trackToolClick(id);
+
       const { data } = await supabase.auth.getUser();
       const currentUser = data?.user;
       setUser(currentUser);
