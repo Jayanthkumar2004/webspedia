@@ -37,18 +37,35 @@ export default function ToolCard({ tool }) {
       // Fetch review comments count from database
       const { data: commentsData } = await supabase
         .from('comments')
-        .select('id')
+        .select('*')
         .eq('tool_id', tool.id);
 
-      setReviewsCount(commentsData?.length || 0);
+      const mainComments = (commentsData || []).filter(c => !c.parent_id);
+      setReviewsCount(mainComments.length);
 
       // Fetch star ratings directly from database 'ratings' table
       const { data: ratingData } = await supabase
         .from('ratings')
-        .select('rating')
+        .select('*')
         .eq('tool_id', tool.id);
 
+      const userRatingsMap = {};
       if (ratingData && ratingData.length > 0) {
+        ratingData.forEach(r => {
+          if (r.user_id && !userRatingsMap[r.user_id]) {
+            userRatingsMap[r.user_id] = Number(r.rating || 5);
+          }
+        });
+      }
+
+      if (mainComments.length > 0) {
+        const total = mainComments.reduce((sum, c) => {
+          let r = c.rating ? Number(c.rating) : (c.user_id && userRatingsMap[c.user_id] ? userRatingsMap[c.user_id] : 5);
+          return sum + r;
+        }, 0);
+        const avg = total / mainComments.length;
+        setAvgRating(avg.toFixed(1));
+      } else if (ratingData && ratingData.length > 0) {
         const total = ratingData.reduce((sum, r) => sum + Number(r.rating || 0), 0);
         const avg = total / ratingData.length;
         setAvgRating(avg.toFixed(1));

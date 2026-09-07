@@ -168,21 +168,11 @@ export default function ToolDetails() {
 
     setComments(enrichedComments);
 
-    if (ratingsData && ratingsData.length > 0) {
-      const sum = ratingsData.reduce((acc, r) => acc + Number(r.rating || 0), 0);
-      const avg = (sum / ratingsData.length).toFixed(1);
-      setAvgRating(avg);
+    const mainComms = enrichedComments.filter(c => !c.parent_id);
 
-      const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-      ratingsData.forEach(r => {
-        const val = Math.min(5, Math.max(1, Math.round(Number(r.rating || 5))));
-        if (dist[val] !== undefined) dist[val]++;
-      });
-      setRatingsDistribution(dist);
-    } else if (enrichedComments.length > 0) {
-      const mainComms = enrichedComments.filter(c => !c.parent_id);
+    if (mainComms.length > 0) {
       const sum = mainComms.reduce((acc, c) => acc + Number(c.rating || 5), 0);
-      const avg = mainComms.length > 0 ? (sum / mainComms.length).toFixed(1) : "0.0";
+      const avg = (sum / mainComms.length).toFixed(1);
       setAvgRating(avg);
 
       const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
