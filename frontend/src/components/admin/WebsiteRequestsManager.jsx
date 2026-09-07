@@ -361,10 +361,10 @@ export default function WebsiteRequestsManager() {
                         {/* QUICK WHATSAPP */}
                         {cleanPhone && (
                           <a
-                            href={`https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(`Hello ${req.full_name}, regarding your website request for ${req.business_name} on Webspedia...`)}`}
+                            href={`https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(`Hi ${req.full_name}! 👋\nThank you for choosing Webspedia! 🚀\nWe’ve successfully received your website request for ${req.business_name}.\nOur team will review your requirements and get back to you shortly.\nThank you for trusting Webspedia. We’re excited to help bring your website idea to life! 💻✨\n— Team Webspedia`)}`}
                             target="_blank"
                             rel="noreferrer"
-                            title="Chat on WhatsApp"
+                            title="Send Thank You Message to Client on WhatsApp"
                             style={{ width: "32px", height: "32px", flexShrink: 0, borderRadius: "8px", background: "rgba(16, 185, 129, 0.12)", color: "#10b981", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
                           >
                             <MessageCircle size={15} />
@@ -545,6 +545,17 @@ export default function WebsiteRequestsManager() {
                 </ClayButton>
 
                 <div style={{ display: "flex", gap: "10px" }}>
+                  {formatCleanPhone(selectedReq.phone) && (
+                    <a
+                      href={`https://wa.me/${formatCleanPhone(selectedReq.phone).length === 10 ? '91' + formatCleanPhone(selectedReq.phone) : formatCleanPhone(selectedReq.phone)}?text=${encodeURIComponent(`Hi ${selectedReq.full_name}! 👋\nThank you for choosing Webspedia! 🚀\nWe’ve successfully received your website request for ${selectedReq.business_name}.\nOur team will review your requirements and get back to you shortly.\nThank you for trusting Webspedia. We’re excited to help bring your website idea to life! 💻✨\n— Team Webspedia`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ textDecoration: 'none', background: '#25D366', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: '800' }}
+                    >
+                      <MessageCircle size={15} />
+                      <span>Send WhatsApp Thank You</span>
+                    </a>
+                  )}
                   <ClayButton type="button" onClick={() => setShowModal(false)}>Cancel</ClayButton>
                   <ClayButton variant="primary" type="submit" disabled={submitting}>
                     <span>{submitting ? 'Saving...' : 'Save Updates'}</span>
