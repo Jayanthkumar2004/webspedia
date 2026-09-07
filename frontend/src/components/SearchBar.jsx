@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, Sparkles, ChevronDown, ArrowRight, Flame } from 'lucide-react';
+import { Search, X, Sparkles, ChevronDown, ArrowRight, Flame, Check } from 'lucide-react';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
 import '../styles/searchbar.css';
 
@@ -17,6 +17,7 @@ export default function SearchBar({
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const inputRef = useRef(null);
   const wrapperRef = useRef(null);
 
@@ -31,6 +32,7 @@ export default function SearchBar({
         inputRef.current?.focus();
       } else if (e.key === 'Escape') {
         setIsOpen(false);
+        setCatDropdownOpen(false);
         inputRef.current?.blur();
       }
     };
@@ -39,11 +41,12 @@ export default function SearchBar({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
         setIsOpen(false);
+        setCatDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -70,6 +73,7 @@ export default function SearchBar({
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsOpen(false);
+    setCatDropdownOpen(false);
     if (onSearchSubmit) {
       onSearchSubmit(e);
     }
@@ -77,7 +81,13 @@ export default function SearchBar({
 
   const handleSelectTool = (toolId) => {
     setIsOpen(false);
+    setCatDropdownOpen(false);
     navigate(`/tool/${toolId}`);
+  };
+
+  const handleSelectCategory = (cat) => {
+    if (setCategory) setCategory(cat);
+    setCatDropdownOpen(false);
   };
 
   const handleTrendingClick = (tag) => {
@@ -108,21 +118,40 @@ export default function SearchBar({
         className={`search-container-clay ${isFocused ? 'is-focused' : ''}`}
         onSubmit={handleSubmit}
       >
-        {/* INLINE CATEGORY SELECTOR DROPDOWN */}
+        {/* CUSTOM 3D CLAY CATEGORY SELECTOR DROPDOWN */}
         {setCategory && categories && categories.length > 1 && (
           <div className="search-category-select-wrapper">
-            <select
-              className="search-category-select"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+            <button
+              type="button"
+              className={`search-category-btn ${catDropdownOpen ? 'active' : ''}`}
+              onClick={() => {
+                setCatDropdownOpen(!catDropdownOpen);
+                setIsOpen(false);
+              }}
+              title="Filter by category"
             >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat === 'All' ? 'All Categories' : cat}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="category-select-arrow" />
+              <span>{category === 'All' ? 'All Categories' : category}</span>
+              <ChevronDown size={14} className={`category-select-arrow ${catDropdownOpen ? 'open' : ''}`} />
+            </button>
+
+            {/* CUSTOM FLOATING CATEGORY POPOVER */}
+            {catDropdownOpen && (
+              <div className="search-category-popover clay-card-floating">
+                <div className="category-popover-header">Select Category</div>
+                <div className="category-popover-list">
+                  {categories.map((cat) => (
+                    <div
+                      key={cat}
+                      className={`category-popover-item ${category === cat ? 'selected' : ''}`}
+                      onClick={() => handleSelectCategory(cat)}
+                    >
+                      <span>{cat === 'All' ? 'All Categories' : cat}</span>
+                      {category === cat && <Check size={14} className="cat-check-icon" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

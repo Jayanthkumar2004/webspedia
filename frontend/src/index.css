@@ -331,6 +331,24 @@ select {
   background-position: right 14px center;
 }
 
+select option {
+  background-color: var(--clay-surface-raised, #ffffff);
+  color: var(--text-primary, #1e293b);
+  padding: 8px 12px;
+}
+
+body.dark select option,
+.dark select option {
+  background-color: #181c2b !important;
+  color: #f8fafc !important;
+}
+
+body.light select option,
+.light select option {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
 /* Universal Table Reset */
 table {
   width: 100%;
