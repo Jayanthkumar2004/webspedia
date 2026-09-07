@@ -123,7 +123,17 @@ export default function WebsiteServices() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState('');
-  const [lastWaUrl, setLastWaUrl] = useState('');
+  const [lastClientWaUrl, setLastClientWaUrl] = useState('');
+  const [lastAdminWaUrl, setLastAdminWaUrl] = useState('');
+
+  const formatWaNumber = (phoneStr) => {
+    if (!phoneStr) return '';
+    const digitsOnly = phoneStr.replace(/\D/g, '');
+    if (digitsOnly.length === 10) {
+      return `91${digitsOnly}`;
+    }
+    return digitsOnly;
+  };
 
   useEffect(() => {
     fetchAllServicesData();
@@ -234,9 +244,29 @@ export default function WebsiteServices() {
         console.warn('Supabase insert warning:', insertErr.message);
       }
 
-      // Generate structured WhatsApp message for automatic dispatch
-      const waNumber = (contactSettings?.whatsapp_number || '+919876543210').replace(/\D/g, '');
-      const waMessage = `*New Website Request - Webspedia* 🚀\n\n` +
+      // 1. Format client & admin phone numbers for WhatsApp
+      const clientPhoneFormatted = formatWaNumber(form.phone);
+      const adminPhoneFormatted = (contactSettings?.whatsapp_number || '+919876543210').replace(/\D/g, '');
+
+      // 2. Client Thank-You WhatsApp Message
+      const clientWaMessage = `Hello ${form.full_name.trim()}! 👋\n\n` +
+        `Thank you for choosing *Webspedia Digital Studio*! 🚀\n\n` +
+        `We have successfully received your request for *${form.business_name.trim()}* (${form.website_type}). Our team is reviewing your requirements and will get in touch with you shortly.\n\n` +
+        `*Request Details Summary:*\n` +
+        `• *Client Name:* ${form.full_name.trim()}\n` +
+        `• *Website Type:* ${form.website_type}\n` +
+        `• *Preferred Contact:* ${form.preferred_contact_method}\n` +
+        `• *Budget Range:* ${form.budget}\n` +
+        (form.deadline.trim() ? `• *Target Deadline:* ${form.deadline.trim()}\n` : '') +
+        `\nFeel free to reply directly to this message if you have any immediate updates or questions!\n\n` +
+        `Best regards,\n` +
+        `*Webspedia Team*\n` +
+        `https://webspedia.in`;
+
+      const clientWaUrl = clientPhoneFormatted ? `https://wa.me/${clientPhoneFormatted}?text=${encodeURIComponent(clientWaMessage)}` : '';
+
+      // 3. Admin Notification WhatsApp Message
+      const adminWaMessage = `*New Website Request - Webspedia* 🚀\n\n` +
         `*Name:* ${form.full_name.trim()}\n` +
         `*Phone:* ${form.phone.trim()}\n` +
         `*Email:* ${form.email.trim()}\n` +
@@ -248,14 +278,20 @@ export default function WebsiteServices() {
         `*Project Details:* ${form.project_description.trim()}\n\n` +
         `Thank you!`;
 
-      const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
-      setLastWaUrl(waUrl);
+      const adminWaUrl = `https://wa.me/${adminPhoneFormatted}?text=${encodeURIComponent(adminWaMessage)}`;
+
+      setLastClientWaUrl(clientWaUrl);
+      setLastAdminWaUrl(adminWaUrl);
 
       setSubmitted(true);
 
-      // Automatically trigger WhatsApp redirect
+      // Automatically trigger WhatsApp redirect to send thank-you message to client
       try {
-        window.open(waUrl, '_blank');
+        if (clientWaUrl) {
+          window.open(clientWaUrl, '_blank');
+        } else {
+          window.open(adminWaUrl, '_blank');
+        }
       } catch (err) {
         console.log('WhatsApp open error:', err);
       }
@@ -643,18 +679,33 @@ export default function WebsiteServices() {
                   {formSettings.success_message || 'Thank you! Your website request has been saved and sent.'}
                 </p>
 
-                {lastWaUrl && (
-                  <a
-                    href={lastWaUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="clay-button-primary"
-                    style={{ textDecoration: 'none', background: '#25D366', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 22px', borderRadius: 'var(--radius-pill)', fontWeight: '800', fontSize: '14px', marginTop: '6px' }}
-                  >
-                    <MessageCircle size={18} />
-                    <span>Send Details on WhatsApp</span>
-                  </a>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', width: '100%', maxWidth: '360px', marginTop: '6px' }}>
+                  {lastClientWaUrl && (
+                    <a
+                      href={lastClientWaUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="clay-button-primary"
+                      style={{ width: '100%', textDecoration: 'none', background: '#25D366', color: '#ffffff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px 20px', borderRadius: 'var(--radius-pill)', fontWeight: '800', fontSize: '14px' }}
+                    >
+                      <MessageCircle size={18} />
+                      <span>Send Thank You Message to Client</span>
+                    </a>
+                  )}
+
+                  {lastAdminWaUrl && (
+                    <a
+                      href={lastAdminWaUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="clay-button-secondary"
+                      style={{ width: '100%', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 18px', borderRadius: 'var(--radius-pill)', fontWeight: '700', fontSize: '13px' }}
+                    >
+                      <MessageCircle size={16} />
+                      <span>Send Request to Webspedia Admin</span>
+                    </a>
+                  )}
+                </div>
 
                 <ClayButton size="sm" onClick={() => setSubmitted(false)} style={{ marginTop: '8px' }}>
                   Submit Another Request
