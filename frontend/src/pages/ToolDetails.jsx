@@ -508,6 +508,24 @@ export default function ToolDetails() {
                   <Bookmark size={15} fill={saved ? "currentColor" : "none"} />
                   <span>{saved ? 'Saved' : 'Save Tool'}</span>
                 </button>
+
+                <button
+                  className="clay-button save-action-btn"
+                  onClick={() => {
+                    const shareUrl = window.location.href;
+                    if (navigator.share) {
+                      navigator.share({ title: tool.title, text: tool.description, url: shareUrl }).catch(() => {});
+                    } else {
+                      navigator.clipboard.writeText(shareUrl);
+                      alert('Tool link copied to clipboard!');
+                    }
+                  }}
+                  type="button"
+                  title="Share Tool"
+                >
+                  <Share2 size={15} />
+                  <span>Share</span>
+                </button>
               </div>
             </div>
           </div>

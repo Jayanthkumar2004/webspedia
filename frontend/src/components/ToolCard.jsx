@@ -5,7 +5,12 @@ import {
   Star, 
   Bookmark, 
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Share2,
+  Copy,
+  Check,
+  MessageCircle,
+  X
 } from 'lucide-react';
 import { trackToolClick } from '../lib/analyticsTracker';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
@@ -17,6 +22,9 @@ export default function ToolCard({ tool }) {
   const [saved, setSaved] = useState(false);
   const [avgRating, setAvgRating] = useState("0.0");
   const [reviewsCount, setReviewsCount] = useState(0);
+
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchPreview = async () => {
@@ -107,6 +115,35 @@ export default function ToolCard({ tool }) {
     if (!error) setSaved(true);
   };
 
+  const handleShare = async (e) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/tool/${tool.id}`;
+    const shareData = {
+      title: tool.title,
+      text: tool.description || `Check out ${tool.title} on Webspedia!`,
+      url: shareUrl
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        // Fallback to share modal if share fails or user cancels
+      }
+    }
+
+    setShowShareModal(true);
+  };
+
+  const copyShareLink = (e) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/tool/${tool.id}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  };
+
   const goToDetails = () => {
     trackToolClick(tool.id);
     navigate(`/tool/${tool.id}`);
@@ -133,14 +170,25 @@ export default function ToolCard({ tool }) {
           />
         </div>
 
-        <button
-          className={`tool-bookmark-btn clay-button ${saved ? 'active' : ''}`}
-          onClick={handleSave}
-          title={saved ? "Saved" : "Save Tool"}
-          type="button"
-        >
-          <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            className="tool-bookmark-btn clay-button"
+            onClick={handleShare}
+            title="Share Tool"
+            type="button"
+          >
+            <Share2 size={15} />
+          </button>
+
+          <button
+            className={`tool-bookmark-btn clay-button ${saved ? 'active' : ''}`}
+            onClick={handleSave}
+            title={saved ? "Saved" : "Save Tool"}
+            type="button"
+          >
+            <Bookmark size={15} fill={saved ? "currentColor" : "none"} />
+          </button>
+        </div>
       </div>
 
       {/* CONTENT */}
@@ -166,6 +214,81 @@ export default function ToolCard({ tool }) {
           <ArrowRight size={14} />
         </button>
       </div>
+
+      {/* SHARE MODAL OVERLAY */}
+      {showShareModal && (
+        <div 
+          className="edit-modal-overlay" 
+          onClick={(e) => { e.stopPropagation(); setShowShareModal(false); }}
+          style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(15, 23, 42, 0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+        >
+          <div 
+            className="clay-surface" 
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: '420px', padding: '24px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Share2 size={18} color="var(--accent-primary)" />
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)' }}>Share {tool.title}</h3>
+              </div>
+              <button 
+                className="clay-pill" 
+                onClick={(e) => { e.stopPropagation(); setShowShareModal(false); }} 
+                type="button" 
+                style={{ padding: '6px' }}
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                readOnly 
+                className="clay-input" 
+                value={`${window.location.origin}/tool/${tool.id}`}
+                style={{ fontSize: '12px', width: '100%' }}
+              />
+              <button 
+                className={`clay-button ${copied ? 'active' : 'clay-button-primary'}`} 
+                onClick={copyShareLink}
+                type="button"
+                style={{ padding: '10px 14px', flexShrink: 0 }}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                <span style={{ fontSize: '12px' }}>{copied ? 'Copied!' : 'Copy'}</span>
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <a 
+                href={`https://wa.me/?text=${encodeURIComponent(`Check out ${tool.title} on Webspedia!\n${window.location.origin}/tool/${tool.id}`)}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="clay-button"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '10px', fontSize: '13px' }}
+              >
+                <MessageCircle size={15} />
+                <span>WhatsApp</span>
+              </a>
+
+              <a 
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${tool.title} on Webspedia!`)}&url=${encodeURIComponent(`${window.location.origin}/tool/${tool.id}`)}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="clay-button"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '10px', fontSize: '13px' }}
+              >
+                <Share2 size={15} />
+                <span>Twitter / X</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
