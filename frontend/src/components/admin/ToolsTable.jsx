@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink, Search, Eye } from 'lucide-react';
+import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink, Search, Eye, Share2, Copy, MessageCircle, Sparkles } from 'lucide-react';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../../utils/placeholder';
 import { ClayInput } from '../clay';
 import '../../styles/ToolsTable.css';
@@ -8,6 +8,8 @@ import '../../styles/ToolsTable.css';
 export default function ToolsTable() {
   const [tools, setTools] = useState([]);
   const [editingTool, setEditingTool] = useState(null);
+  const [sharingTool, setSharingTool] = useState(null);
+  const [copied, setCopied] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -42,6 +44,18 @@ export default function ToolsTable() {
 
   const handleEdit = (tool) => {
     setEditingTool(tool);
+  };
+
+  const handleShareTool = (tool) => {
+    setSharingTool(tool);
+    setCopied(false);
+  };
+
+  const copyToolLink = (tool) => {
+    const link = `${window.location.origin}/tool/${tool.id}`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const handleChange = (e) => {
@@ -128,7 +142,7 @@ export default function ToolsTable() {
           <Wrench size={22} className="header-icon" />
           <div>
             <h2>Manage AI Tools</h2>
-            <p>Update, edit, search, or remove published tools</p>
+            <p>Update, edit, share, or remove published tools ({tools.length} total tools in catalog)</p>
           </div>
         </div>
 
@@ -146,11 +160,101 @@ export default function ToolsTable() {
             )}
           </div>
 
-          <div className="tools-count-pill">
-            <span>{filteredTools.length} Tools</span>
+          <div className="tools-count-pill" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Sparkles size={14} color="var(--accent-primary)" />
+            <span>{tools.length} Tools</span>
+            {search && <span style={{ opacity: 0.75, fontSize: '11px' }}>({filteredTools.length} found)</span>}
           </div>
         </div>
       </div>
+
+      {/* SHARE MODAL */}
+      {sharingTool && (
+        <div className="edit-modal-overlay">
+          <div className="edit-modal clay-surface" style={{ maxWidth: "480px" }}>
+            <div className="edit-modal-header">
+              <div className="modal-title-group">
+                <div className="modal-header-icon-box clay-inset">
+                  <Share2 size={18} className="header-icon" />
+                </div>
+                <div>
+                  <h3>Share AI Tool</h3>
+                  <p className="modal-subtitle">Promote & share {sharingTool.title}</p>
+                </div>
+              </div>
+              <button className="close-btn clay-pill" onClick={() => setSharingTool(null)} type="button">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="edit-form-scrollable" style={{ padding: "20px 24px" }}>
+              <div className="tool-edit-preview-banner clay-inset" style={{ margin: 0 }}>
+                <img 
+                  src={sharingTool.image_url || DEFAULT_TOOL_ICON} 
+                  alt={sharingTool.title}
+                  onError={(e) => handleImageError(e, DEFAULT_TOOL_ICON)}
+                  className="edit-preview-img"
+                />
+                <div className="edit-preview-info">
+                  <h4>{sharingTool.title}</h4>
+                  <span className="table-category-pill">{sharingTool.category || "AI Tool"}</span>
+                </div>
+              </div>
+
+              <div className="form-section-title" style={{ marginTop: "16px" }}>Direct Share Link</div>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input 
+                  type="text" 
+                  readOnly 
+                  className="clay-input" 
+                  value={`${window.location.origin}/tool/${sharingTool.id}`} 
+                  style={{ fontSize: "12px", width: "100%" }}
+                />
+                <button 
+                  className={`clay-button ${copied ? 'active' : 'clay-button-primary'}`} 
+                  onClick={() => copyToolLink(sharingTool)}
+                  type="button"
+                  style={{ padding: "10px 16px", flexShrink: 0 }}
+                >
+                  {copied ? <Check size={15} /> : <Copy size={15} />}
+                  <span>{copied ? 'Copied!' : 'Copy'}</span>
+                </button>
+              </div>
+
+              <div className="form-section-title" style={{ marginTop: "16px" }}>Share via Social & Messaging</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <a 
+                  href={`https://wa.me/?text=${encodeURIComponent(`Check out ${sharingTool.title} on Webspedia!\n${window.location.origin}/tool/${sharingTool.id}`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="clay-button"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", textDecoration: "none", color: "#22c55e", background: "rgba(34, 197, 94, 0.1)", border: "1px solid rgba(34, 197, 94, 0.3)", padding: "10px" }}
+                >
+                  <MessageCircle size={15} />
+                  <span>WhatsApp</span>
+                </a>
+
+                <a 
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${sharingTool.title} on Webspedia!`)}&url=${encodeURIComponent(`${window.location.origin}/tool/${sharingTool.id}`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="clay-button"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", textDecoration: "none", color: "#38bdf8", background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.3)", padding: "10px" }}
+                >
+                  <Share2 size={15} />
+                  <span>Twitter / X</span>
+                </a>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="clay-button save-action-btn" onClick={() => setSharingTool(null)} type="button">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* EDIT MODAL */}
       {editingTool && (
@@ -381,12 +485,17 @@ export default function ToolsTable() {
 
                   <td>
                     <div className="table-action-buttons">
-                      <button className="clay-btn edit-action-btn" onClick={() => handleEdit(tool)} type="button">
+                      <button className="clay-btn edit-action-btn" onClick={() => handleEdit(tool)} type="button" title="Edit Tool">
                         <Edit3 size={13} />
                         <span>Edit</span>
                       </button>
 
-                      <button className="clay-btn delete-action-btn" onClick={() => deleteTool(tool.id)} type="button">
+                      <button className="clay-btn edit-action-btn" onClick={() => handleShareTool(tool)} type="button" title="Share Tool" style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--accent-primary)' }}>
+                        <Share2 size={13} />
+                        <span>Share</span>
+                      </button>
+
+                      <button className="clay-btn delete-action-btn" onClick={() => deleteTool(tool.id)} type="button" title="Delete Tool">
                         <Trash2 size={13} />
                         <span>Delete</span>
                       </button>
@@ -396,7 +505,7 @@ export default function ToolsTable() {
               ))
             ) : (
               <tr>
-                <td colSpan="5">
+                <td colSpan="6">
                   <div className="table-empty-state">
                     <p>{search ? `No AI tools found matching "${search}"` : 'No tools available. Add a tool to manage it here.'}</p>
                   </div>

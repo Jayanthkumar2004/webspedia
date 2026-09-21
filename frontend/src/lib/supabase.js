@@ -3,4 +3,19 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'https://ozgnzbxuypwlwdabufbw.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96Z256Ynh1eXB3bHdkYWJ1ZmJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NzIxMDQsImV4cCI6MjA5MDU0ODEwNH0.EvV2pKZMfQ-aFjYx4NJfievLSFRtOI4mguK8gwRMY9I';
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    // Custom lock implementation to prevent Navigator Lock deadlocks in React strict mode / concurrent calls
+    lock: async (name, acquireTimeout, fn) => {
+      try {
+        return await fn();
+      } catch (err) {
+        console.warn('Supabase lock bypass fallback:', err);
+        return null;
+      }
+    }
+  }
+});

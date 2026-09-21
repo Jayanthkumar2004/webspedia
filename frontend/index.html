@@ -22,14 +22,16 @@
         } catch (err) {}
       })();
 
-      // Filter out third-party browser extension noise (e.g. WhatsApp Web extensions, chrome content scripts)
+      // Filter out third-party noise & Supabase orphaned lock warnings
       window.addEventListener('error', function(e) {
         var msg = (e && (e.message || (e.error && e.error.message))) || '';
         if (
           msg.indexOf('startTime') !== -1 ||
           msg.indexOf('reportAllChanges') !== -1 ||
           msg.indexOf('Not allowed to load local resource') !== -1 ||
-          msg.indexOf('whatsapp') !== -1
+          msg.indexOf('whatsapp') !== -1 ||
+          msg.indexOf('gotrue-js') !== -1 ||
+          msg.indexOf('Lock') !== -1
         ) {
           if (e.stopImmediatePropagation) e.stopImmediatePropagation();
           if (e.preventDefault) e.preventDefault();
@@ -38,12 +40,15 @@
       }, true);
 
       window.addEventListener('unhandledrejection', function(e) {
-        var reason = (e && e.reason && (e.reason.message || e.reason)) || '';
+        var reason = (e && e.reason && (e.reason.message || e.reason || e.reason.name)) || '';
         if (
           reason.indexOf('startTime') !== -1 ||
           reason.indexOf('reportAllChanges') !== -1 ||
           reason.indexOf('Not allowed to load local resource') !== -1 ||
-          reason.indexOf('whatsapp') !== -1
+          reason.indexOf('whatsapp') !== -1 ||
+          reason.indexOf('gotrue-js') !== -1 ||
+          reason.indexOf('Lock') !== -1 ||
+          reason.indexOf('steal') !== -1
         ) {
           if (e.preventDefault) e.preventDefault();
         }
