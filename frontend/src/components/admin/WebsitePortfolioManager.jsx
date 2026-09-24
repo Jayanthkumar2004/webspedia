@@ -97,10 +97,24 @@ export default function WebsitePortfolioManager() {
     setSubmitting(true);
 
     const techArray = technologies.split(',').map(t => t.trim()).filter(Boolean);
-
+    const techString = techArray.join(', ');
     const cleanThumbnail = sanitizeImageUrl(thumbnailUrl.trim(), null);
 
-    const payload = {
+    const saveToSupabase = async (dataPayload) => {
+      if (editId) {
+        return await supabase
+          .from('website_portfolio')
+          .update(dataPayload)
+          .eq('id', editId);
+      } else {
+        return await supabase
+          .from('website_portfolio')
+          .insert([dataPayload]);
+      }
+    };
+
+    // Primary full payload
+    const fullPayload = {
       project_name: projectName.trim(),
       description: description.trim(),
       category,
@@ -115,31 +129,51 @@ export default function WebsitePortfolioManager() {
     };
 
     try {
-      if (editId) {
-        const { error } = await supabase
-          .from('website_portfolio')
-          .update(payload)
-          .eq('id', editId);
+      // 1. Try primary full payload
+      let { error } = await saveToSupabase(fullPayload);
 
+      // 2. If 400 Bad Request (e.g. technologies array vs text column mismatch), retry with string technologies
+      if (error) {
+        console.warn('Full payload insert failed, retrying with string technologies:', error.message);
+        
+        const fallbackPayload1 = {
+          project_name: projectName.trim(),
+          description: description.trim(),
+          category,
+          client_name: clientName.trim() || null,
+          thumbnail_url: cleanThumbnail,
+          live_url: liveUrl.trim() || null,
+          technologies: techString,
+          featured,
+          published,
+          display_order: Number(displayOrder) || 0
+        };
+
+        const res1 = await saveToSupabase(fallbackPayload1);
+        error = res1.error;
+
+        // 3. Fallback for basic schema (if published/featured/display_order don't exist yet in DB)
         if (error) {
-          alert("Update failed: " + error.message);
-        } else {
-          alert("Portfolio project updated!");
-          setShowModal(false);
-          fetchPortfolio();
+          console.warn('Fallback 1 failed, trying core minimal payload:', error.message);
+          const minimalPayload = {
+            project_name: projectName.trim(),
+            description: description.trim(),
+            category,
+            live_url: liveUrl.trim() || null
+          };
+          if (cleanThumbnail) minimalPayload.thumbnail_url = cleanThumbnail;
+
+          const res2 = await saveToSupabase(minimalPayload);
+          error = res2.error;
         }
+      }
+
+      if (error) {
+        alert("Operation failed: " + error.message + "\n\nPlease run the provided SQL query in Supabase SQL Editor to add missing columns.");
       } else {
-        const { error } = await supabase
-          .from('website_portfolio')
-          .insert([payload]);
-
-        if (error) {
-          alert("Add failed: " + error.message);
-        } else {
-          alert("Portfolio project added!");
-          setShowModal(false);
-          fetchPortfolio();
-        }
+        alert(editId ? "Portfolio project updated!" : "Portfolio project added!");
+        setShowModal(false);
+        fetchPortfolio();
       }
     } catch (err) {
       alert("Error: " + err.message);
