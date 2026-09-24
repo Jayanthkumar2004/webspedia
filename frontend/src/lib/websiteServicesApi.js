@@ -550,14 +550,24 @@ export async function getPortfolio() {
 export async function createPortfolioItem(item) {
   const newItem = { published: true, featured: false, display_order: Date.now(), ...item };
   const cleanPayload = sanitizePayload(newItem);
-  try {
-    const { data, error } = await supabase.from('website_portfolio').insert([cleanPayload]).select();
-    if (!error && data && data[0]) {
-      const current = getLocal('portfolio', INITIAL_PORTFOLIO);
-      setLocal('portfolio', [...current, data[0]]);
-      return data[0];
+  
+  if (!missingTablesSet.has('website_portfolio')) {
+    try {
+      const { data, error } = await supabase.from('website_portfolio').insert([cleanPayload]).select();
+      if (!error && data && data[0]) {
+        const current = getLocal('portfolio', INITIAL_PORTFOLIO);
+        setLocal('portfolio', [...current, data[0]]);
+        return data[0];
+      } else if (error) {
+        if (error.code === 'PGRST204' || error.status === 404 || error.status === 400 || error.message?.includes('Could not find')) {
+          missingTablesSet.add('website_portfolio');
+        }
+      }
+    } catch (e) {
+      missingTablesSet.add('website_portfolio');
     }
-  } catch (e) {}
+  }
+
   newItem.id = `port_${Date.now()}`;
   const current = getLocal('portfolio', INITIAL_PORTFOLIO);
   const updated = [...current, newItem];
@@ -566,12 +576,19 @@ export async function createPortfolioItem(item) {
 }
 
 export async function updatePortfolioItem(id, payload) {
-  try {
-    if (isValidUUID(id)) {
-      const cleanPayload = sanitizePayload(payload);
-      await supabase.from('website_portfolio').update(cleanPayload).eq('id', id);
+  if (!missingTablesSet.has('website_portfolio')) {
+    try {
+      if (isValidUUID(id)) {
+        const cleanPayload = sanitizePayload(payload);
+        const { error } = await supabase.from('website_portfolio').update(cleanPayload).eq('id', id);
+        if (error && (error.status === 404 || error.status === 400 || error.code === 'PGRST204')) {
+          missingTablesSet.add('website_portfolio');
+        }
+      }
+    } catch (e) {
+      missingTablesSet.add('website_portfolio');
     }
-  } catch (e) {}
+  }
   const current = getLocal('portfolio', INITIAL_PORTFOLIO);
   const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
   setLocal('portfolio', updated);
@@ -579,11 +596,18 @@ export async function updatePortfolioItem(id, payload) {
 }
 
 export async function deletePortfolioItem(id) {
-  try {
-    if (isValidUUID(id)) {
-      await supabase.from('website_portfolio').delete().eq('id', id);
+  if (!missingTablesSet.has('website_portfolio')) {
+    try {
+      if (isValidUUID(id)) {
+        const { error } = await supabase.from('website_portfolio').delete().eq('id', id);
+        if (error && (error.status === 404 || error.status === 400 || error.code === 'PGRST204')) {
+          missingTablesSet.add('website_portfolio');
+        }
+      }
+    } catch (e) {
+      missingTablesSet.add('website_portfolio');
     }
-  } catch (e) {}
+  }
   const current = getLocal('portfolio', INITIAL_PORTFOLIO);
   const updated = current.filter(item => item.id !== id);
   setLocal('portfolio', updated);
