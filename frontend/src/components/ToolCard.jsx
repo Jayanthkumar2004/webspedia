@@ -6,6 +6,7 @@ import {
   Bookmark, 
   ArrowRight,
   Sparkles,
+  Share,
   Share2,
   Copy,
   Check,
@@ -172,12 +173,13 @@ export default function ToolCard({ tool }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
-            className="tool-bookmark-btn clay-button"
+            className="tool-share-btn"
             onClick={handleShare}
             title="Share Tool"
             type="button"
           >
-            <Share2 size={15} />
+            <Share size={13} />
+            <span>Share</span>
           </button>
 
           <button

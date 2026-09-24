@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Zap,
   Globe,
+  Share,
   Share2,
   Bookmark,
   Filter,
@@ -523,7 +524,7 @@ export default function ToolDetails() {
                   type="button"
                   title="Share Tool"
                 >
-                  <Share2 size={15} />
+                  <Share size={15} />
                   <span>Share</span>
                 </button>
               </div>

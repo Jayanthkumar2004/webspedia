@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink, Search, Eye, Share2, Copy, MessageCircle, Sparkles } from 'lucide-react';
+import { Wrench, Edit3, Trash2, FileText, X, Check, Upload, ExternalLink, Search, Eye, Share, Share2, Copy, MessageCircle, Sparkles } from 'lucide-react';
 import { DEFAULT_TOOL_ICON, handleImageError } from '../../utils/placeholder';
 import { ClayInput } from '../clay';
 import '../../styles/ToolsTable.css';
@@ -491,7 +491,7 @@ export default function ToolsTable() {
                       </button>
 
                       <button className="clay-btn edit-action-btn" onClick={() => handleShareTool(tool)} type="button" title="Share Tool" style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--accent-primary)' }}>
-                        <Share2 size={13} />
+                        <Share size={13} />
                         <span>Share</span>
                       </button>
 

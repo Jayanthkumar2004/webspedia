@@ -77,6 +77,30 @@
   border: none;
 }
 
+.tool-share-btn {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tool-share-btn:hover {
+  background: var(--accent-gradient);
+  color: #ffffff;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
 .tool-content {
   display: flex;
   flex-direction: column;
