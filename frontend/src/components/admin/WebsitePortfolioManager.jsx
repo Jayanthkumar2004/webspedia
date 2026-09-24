@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { 
+  getPortfolio, 
+  createPortfolioItem, 
+  updatePortfolioItem, 
+  deletePortfolioItem 
+} from '../../lib/websiteServicesApi';
 import { ClayCard, ClayButton, ClayBadge, ClayInput } from '../clay';
 import {
   FolderKanban,
@@ -42,14 +48,7 @@ export default function WebsitePortfolioManager() {
   const fetchPortfolio = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('website_portfolio')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) {
-        console.warn('Fetch website_portfolio error:', error.message);
-      }
+      const data = await getPortfolio();
       setPortfolio(data || []);
     } catch (err) {
       console.error(err);
@@ -74,11 +73,11 @@ export default function WebsitePortfolioManager() {
 
   const openEditModal = (item) => {
     setEditId(item.id);
-    setProjectName(item.project_name || '');
+    setProjectName(item.project_name || item.title || '');
     setDescription(item.description || '');
     setCategory(item.category || 'Business');
     setClientName(item.client_name || '');
-    setThumbnailUrl(item.thumbnail_url || '');
+    setThumbnailUrl(item.thumbnail_url || item.image_url || '');
     setLiveUrl(item.live_url || '');
     setTechnologies(Array.isArray(item.technologies) ? item.technologies.join(', ') : (item.technologies || ''));
     setFeatured(!!item.featured);
@@ -97,24 +96,9 @@ export default function WebsitePortfolioManager() {
     setSubmitting(true);
 
     const techArray = technologies.split(',').map(t => t.trim()).filter(Boolean);
-    const techString = techArray.join(', ');
     const cleanThumbnail = sanitizeImageUrl(thumbnailUrl.trim(), null);
 
-    const saveToSupabase = async (dataPayload) => {
-      if (editId) {
-        return await supabase
-          .from('website_portfolio')
-          .update(dataPayload)
-          .eq('id', editId);
-      } else {
-        return await supabase
-          .from('website_portfolio')
-          .insert([dataPayload]);
-      }
-    };
-
-    // Primary full payload
-    const fullPayload = {
+    const payload = {
       project_name: projectName.trim(),
       description: description.trim(),
       category,
@@ -129,52 +113,15 @@ export default function WebsitePortfolioManager() {
     };
 
     try {
-      // 1. Try primary full payload
-      let { error } = await saveToSupabase(fullPayload);
-
-      // 2. If 400 Bad Request (e.g. technologies array vs text column mismatch), retry with string technologies
-      if (error) {
-        console.warn('Full payload insert failed, retrying with string technologies:', error.message);
-        
-        const fallbackPayload1 = {
-          project_name: projectName.trim(),
-          description: description.trim(),
-          category,
-          client_name: clientName.trim() || null,
-          thumbnail_url: cleanThumbnail,
-          live_url: liveUrl.trim() || null,
-          technologies: techString,
-          featured,
-          published,
-          display_order: Number(displayOrder) || 0
-        };
-
-        const res1 = await saveToSupabase(fallbackPayload1);
-        error = res1.error;
-
-        // 3. Fallback for basic schema (if published/featured/display_order don't exist yet in DB)
-        if (error) {
-          console.warn('Fallback 1 failed, trying core minimal payload:', error.message);
-          const minimalPayload = {
-            project_name: projectName.trim(),
-            description: description.trim(),
-            category,
-            live_url: liveUrl.trim() || null
-          };
-          if (cleanThumbnail) minimalPayload.thumbnail_url = cleanThumbnail;
-
-          const res2 = await saveToSupabase(minimalPayload);
-          error = res2.error;
-        }
-      }
-
-      if (error) {
-        alert("Operation failed: " + error.message + "\n\nPlease run the provided SQL query in Supabase SQL Editor to add missing columns.");
+      if (editId) {
+        await updatePortfolioItem(editId, payload);
+        alert("Portfolio project updated!");
       } else {
-        alert(editId ? "Portfolio project updated!" : "Portfolio project added!");
-        setShowModal(false);
-        fetchPortfolio();
+        await createPortfolioItem(payload);
+        alert("Portfolio project added!");
       }
+      setShowModal(false);
+      fetchPortfolio();
     } catch (err) {
       alert("Error: " + err.message);
     }
