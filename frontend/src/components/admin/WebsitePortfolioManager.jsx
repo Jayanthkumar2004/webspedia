@@ -134,17 +134,9 @@ export default function WebsitePortfolioManager() {
     if (!confirmDelete) return;
 
     try {
-      const { error } = await supabase
-        .from('website_portfolio')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert("Delete failed: " + error.message);
-      } else {
-        setPortfolio(prev => prev.filter(p => p.id !== id));
-        alert("Project deleted.");
-      }
+      await deletePortfolioItem(id);
+      setPortfolio(prev => prev.filter(p => p.id !== id));
+      alert("Project deleted.");
     } catch (err) {
       alert("Delete error: " + err.message);
     }
@@ -153,16 +145,8 @@ export default function WebsitePortfolioManager() {
   const togglePublished = async (item) => {
     try {
       const newStatus = !item.published;
-      const { error } = await supabase
-        .from('website_portfolio')
-        .update({ published: newStatus })
-        .eq('id', item.id);
-
-      if (error) {
-        alert("Failed to toggle published status: " + error.message);
-      } else {
-        setPortfolio(prev => prev.map(p => p.id === item.id ? { ...p, published: newStatus } : p));
-      }
+      await updatePortfolioItem(item.id, { published: newStatus });
+      setPortfolio(prev => prev.map(p => p.id === item.id ? { ...p, published: newStatus } : p));
     } catch (err) {
       alert("Error: " + err.message);
     }

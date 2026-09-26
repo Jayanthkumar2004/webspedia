@@ -559,6 +559,22 @@ export async function createPortfolioItem(item) {
         setLocal('portfolio', [...current, data[0]]);
         return data[0];
       } else if (error) {
+        // Fallback for 400 Bad Request (e.g. text vs text[] column type mismatch or missing updated_at)
+        const fallbackPayload = { ...cleanPayload };
+        if (Array.isArray(fallbackPayload.technologies)) {
+          fallbackPayload.technologies = fallbackPayload.technologies.join(', ');
+        }
+        delete fallbackPayload.updated_at;
+
+        try {
+          const { data: retryData, error: retryError } = await supabase.from('website_portfolio').insert([fallbackPayload]).select();
+          if (!retryError && retryData && retryData[0]) {
+            const current = getLocal('portfolio', INITIAL_PORTFOLIO);
+            setLocal('portfolio', [...current, retryData[0]]);
+            return retryData[0];
+          }
+        } catch (err) {}
+
         if (error.code === 'PGRST204' || error.status === 404 || error.status === 400 || error.message?.includes('Could not find')) {
           missingTablesSet.add('website_portfolio');
         }
@@ -581,8 +597,25 @@ export async function updatePortfolioItem(id, payload) {
       if (isValidUUID(id)) {
         const cleanPayload = sanitizePayload(payload);
         const { error } = await supabase.from('website_portfolio').update(cleanPayload).eq('id', id);
-        if (error && (error.status === 404 || error.status === 400 || error.code === 'PGRST204')) {
-          missingTablesSet.add('website_portfolio');
+        if (!error) {
+          const current = getLocal('portfolio', INITIAL_PORTFOLIO);
+          const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
+          setLocal('portfolio', updated);
+          return true;
+        } else if (error && (error.status === 404 || error.status === 400 || error.code === 'PGRST204')) {
+          const fallbackPayload = { ...cleanPayload };
+          if (Array.isArray(fallbackPayload.technologies)) {
+            fallbackPayload.technologies = fallbackPayload.technologies.join(', ');
+          }
+          delete fallbackPayload.updated_at;
+          try {
+            const { error: retryErr } = await supabase.from('website_portfolio').update(fallbackPayload).eq('id', id);
+            if (retryErr) {
+              missingTablesSet.add('website_portfolio');
+            }
+          } catch (e) {
+            missingTablesSet.add('website_portfolio');
+          }
         }
       }
     } catch (e) {
