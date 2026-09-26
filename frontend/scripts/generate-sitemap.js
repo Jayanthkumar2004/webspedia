@@ -41,8 +41,7 @@ async function generateSitemap() {
 
   const staticPages = [
     { url: '/', priority: '1.0', changefreq: 'daily' },
-    { url: '/website-services', priority: '0.9', changefreq: 'weekly' },
-    { url: '/saved-tools', priority: '0.5', changefreq: 'monthly' }
+    { url: '/website-services', priority: '0.9', changefreq: 'weekly' }
   ];
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
@@ -58,21 +57,12 @@ async function generateSitemap() {
     xml += `  </url>\n`;
   });
 
-  // Dynamic AI Tool Pages
+  // Dynamic AI Tool Pages (ONLY clean /tools/:slug URLs)
   const processedSlugs = new Set();
   tools.forEach(tool => {
-    const lastMod = (tool.updated_at || tool.created_at || new Date().toISOString()).split('T')[0];
+    const lastMod = (tool.created_at || new Date().toISOString()).split('T')[0];
     const slug = createSlug(tool.title);
 
-    // 1. Tool ID URL
-    xml += `  <url>\n`;
-    xml += `    <loc>${SITE_URL}/tool/${tool.id}</loc>\n`;
-    xml += `    <lastmod>${lastMod}</lastmod>\n`;
-    xml += `    <changefreq>weekly</changefreq>\n`;
-    xml += `    <priority>0.8</priority>\n`;
-    xml += `  </url>\n`;
-
-    // 2. SEO Friendly Slug URL
     if (slug && !processedSlugs.has(slug)) {
       processedSlugs.add(slug);
       xml += `  <url>\n`;
@@ -93,7 +83,7 @@ async function generateSitemap() {
 
   const sitemapPath = path.join(publicDir, 'sitemap.xml');
   fs.writeFileSync(sitemapPath, xml, 'utf8');
-  console.log(`Successfully generated sitemap.xml with ${staticPages.length + (tools.length * 2)} URLs at ${sitemapPath}`);
+  console.log(`Successfully generated sitemap.xml with ${staticPages.length + processedSlugs.size} URLs at ${sitemapPath}`);
 }
 
 generateSitemap().catch(err => {

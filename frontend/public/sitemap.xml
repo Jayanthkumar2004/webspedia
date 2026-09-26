@@ -13,26 +13,8 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/saved-tools</loc>
-    <lastmod>2026-09-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/6c0d8c6b-0511-4ee1-8cc9-9435f3d4a078</loc>
-    <lastmod>2026-04-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tools/chatgpt</loc>
-    <lastmod>2026-04-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/55c51582-b4bd-4caa-a9dc-d9f6479fc4e8</loc>
-    <lastmod>2026-04-03</lastmod>
+    <loc>https://webspedia.vercel.app/tools/canva</loc>
+    <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -43,20 +25,8 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/efceb6f9-20e5-4eab-8e53-d4daefb89af9</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/gamma</loc>
     <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/9c63940f-ece6-4a8b-a1a9-79f8aa207899</loc>
-    <lastmod>2026-09-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -67,19 +37,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/f776ab90-1702-4b51-88c8-f07559819d82</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/github-copilot</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/7ef52b2f-006b-4e4e-9b5b-7587e47e5503</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -91,31 +49,13 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/19f72191-4009-4e78-a6cb-54624a040038</loc>
-    <lastmod>2026-05-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/perplexity</loc>
     <lastmod>2026-05-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/8166c275-5f1a-4f49-9a5a-e83f81f31392</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/khanmigo</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/65f60487-2890-497c-ab39-4da8171f9c0e</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -127,19 +67,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/87c0749b-1533-4d2b-8eaa-ace8721fd748</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/jasper</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/2bacd984-ae6d-4390-acfe-af448925f9c3</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -151,31 +79,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/bbb3000e-7f6c-407b-9098-a451a3b5b9d5</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tools/canva</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/fb2d90d7-2db9-4c11-8988-c74d0a2ad2e3</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/quillbot</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/9f6fb196-cea5-4696-9828-132dad6f8ec0</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -187,19 +91,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/412a1fd1-df46-4741-88a8-9e635622666b</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/claude</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/06788f1c-f036-45ae-ac17-39eff88efc1b</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -211,31 +103,19 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/95aafcce-dbe1-43fe-83cf-ea3a764c41a2</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/quizlet</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/67c441e5-803a-4676-9462-b1b850e95847</loc>
-    <lastmod>2026-09-05</lastmod>
+    <loc>https://webspedia.vercel.app/tools/chatgpt</loc>
+    <lastmod>2026-04-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://webspedia.vercel.app/tools/heygen</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/094f61e4-e058-447b-a8c0-a494def8d83e</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -247,19 +127,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/47d60f41-fc49-4842-926c-f01b5a1f0fef</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/grammarly</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/57b1defc-4eea-4225-bf49-4be6c8334ddd</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -271,19 +139,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/6c89d5e6-4c04-4957-a67e-5c490d5f0a3e</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/notebooklm</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/8f9eb809-dce7-40ba-88ac-1db78db5b0eb</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -295,20 +151,8 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/ec5763b4-f86e-4678-9c8d-494d7e0c8043</loc>
-    <lastmod>2026-09-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/bolt-new</loc>
     <lastmod>2026-09-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/80884bb6-7053-4cd9-b146-4ad7fbdc2b09</loc>
-    <lastmod>2026-09-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -319,32 +163,14 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/8ecb9543-eb18-4884-beae-0f0d5b6d65f3</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/midjourney</loc>
     <lastmod>2026-09-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://webspedia.vercel.app/tool/c87d727a-2599-4903-a529-0c8f83cfdc5a</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://webspedia.vercel.app/tools/replit-ai-presentation-maker</loc>
     <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://webspedia.vercel.app/tool/0ade93c4-9c25-413d-b9e1-c4b7a69c3a29</loc>
-    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

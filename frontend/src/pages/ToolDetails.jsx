@@ -52,6 +52,8 @@ export default function ToolDetails() {
   const navigate = useNavigate();
 
   const [tool, setTool] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [comments, setComments] = useState([]);
   const [user, setUser] = useState(null);
   const [newComment, setNewComment] = useState("");
@@ -81,63 +83,95 @@ export default function ToolDetails() {
     let channel;
 
     const init = async () => {
-      const { data } = await supabase.auth.getUser();
-      const currentUser = data?.user;
-      setUser(currentUser);
+      setLoading(true);
+      setNotFound(false);
 
-      const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
-      let targetTool = null;
+      try {
+        let targetTool = null;
+        const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
-      if (isUUID) {
-        const { data: toolData } = await supabase
-          .from('tools')
-          .select('*')
-          .eq('id', id)
-          .maybeSingle();
-        targetTool = toolData;
-      }
-
-      if (!targetTool) {
-        const { data: allTools } = await supabase.from('tools').select('*');
-        if (allTools) {
-          targetTool = allTools.find(t => t.id === id || createSlug(t.title) === id);
+        if (isUUID) {
+          const { data: toolData } = await supabase
+            .from('tools')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle();
+          targetTool = toolData;
         }
+
+        if (!targetTool) {
+          const { data: allTools } = await supabase.from('tools').select('*');
+          if (allTools && allTools.length > 0) {
+            const cleanId = (id || '').toLowerCase().trim();
+            targetTool = allTools.find(t => 
+              t.id === id || 
+              createSlug(t.title) === cleanId ||
+              createSlug(t.title) === createSlug(cleanId) ||
+              t.title.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanId.replace(/[^a-z0-9]/g, '')
+            );
+          }
+        }
+
+        if (!targetTool) {
+          setLoading(false);
+          setNotFound(true);
+          return;
+        }
+
+        setTool(targetTool);
+        const realToolId = targetTool.id;
+        const canonicalSlug = createSlug(targetTool.title);
+
+        // Redirect old /tool/:uuid URLs to clean /tools/:slug URL
+        if (window.location.pathname.startsWith('/tool/')) {
+          navigate(`/tools/${canonicalSlug}`, { replace: true });
+        }
+
+        trackToolClick(realToolId);
+
+        // Non-blocking auth check so unauthenticated visitors/bots load tool details instantly
+        try {
+          const { data: authData } = await supabase.auth.getUser();
+          const currentUser = authData?.user;
+          setUser(currentUser);
+
+          if (currentUser) {
+            const { data: savedData } = await supabase
+              .from("saved_tools")
+              .select("id")
+              .eq("tool_id", realToolId)
+              .eq("user_id", currentUser.id)
+              .maybeSingle();
+
+            if (savedData) setSaved(true);
+          }
+        } catch (authErr) {
+          console.warn("Auth check error in ToolDetails:", authErr);
+        }
+
+        await fetchCommentsAndRatings(realToolId);
+
+        const channelName = `comments-${realToolId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        channel = supabase
+          .channel(channelName)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'comments',
+              filter: `tool_id=eq.${realToolId}`
+            },
+            () => fetchCommentsAndRatings(realToolId)
+          );
+
+        channel.subscribe();
+      } catch (err) {
+        console.error("Error initializing ToolDetails:", err);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
       }
-
-      if (!targetTool) return;
-
-      setTool(targetTool);
-      const realToolId = targetTool.id;
-      trackToolClick(realToolId);
-
-      if (currentUser) {
-        const { data: savedData } = await supabase
-          .from("saved_tools")
-          .select("id")
-          .eq("tool_id", realToolId)
-          .eq("user_id", currentUser.id)
-          .maybeSingle();
-
-        if (savedData) setSaved(true);
-      }
-
-      await fetchCommentsAndRatings(realToolId);
-
-      const channelName = `comments-${realToolId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      channel = supabase
-        .channel(channelName)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'comments',
-            filter: `tool_id=eq.${realToolId}`
-          },
-          () => fetchCommentsAndRatings(realToolId)
-        );
-
-      channel.subscribe();
     };
 
     init();
@@ -465,13 +499,36 @@ export default function ToolDetails() {
       return new Date(b.created_at) - new Date(a.created_at);
     });
 
-  if (!tool) {
+  if (loading) {
     return (
       <div className="page-container">
         <Navbar />
-        <div className="loading-state clay-surface" style={{ margin: "60px auto", maxWidth: "600px" }}>
-          <p>Loading product details...</p>
+        <div className="loading-state clay-surface" style={{ margin: "60px auto", maxWidth: "600px", padding: "40px", textAlign: "center" }}>
+          <p style={{ fontSize: "16px", color: "var(--text-secondary)" }}>Loading tool details...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (notFound || !tool) {
+    return (
+      <div className="page-container">
+        <SeoHead
+          title="Tool Not Found - Webspedia"
+          description="The requested AI tool could not be found on Webspedia."
+          noindex={true}
+        />
+        <Navbar />
+        <div className="clay-surface" style={{ margin: "60px auto", maxWidth: "600px", padding: "40px", textAlign: "center" }}>
+          <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "var(--text-primary)" }}>Tool Not Found</h2>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "20px" }}>
+            The AI tool you are looking for does not exist or may have been removed.
+          </p>
+          <Link to="/" className="clay-button clay-button-primary" style={{ display: "inline-block", textDecoration: "none" }}>
+            Browse All AI Tools
+          </Link>
+        </div>
+        <Footer />
       </div>
     );
   }
