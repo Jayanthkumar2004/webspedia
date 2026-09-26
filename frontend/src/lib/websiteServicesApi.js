@@ -290,12 +290,25 @@ function isValidUUID(str) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 }
 
-// Helper to sanitize payload for Supabase PostgreSQL UUID columns
+// Helper to sanitize payload for Supabase PostgreSQL UUID & INTEGER columns
 function sanitizePayload(payload) {
   const clean = { ...payload };
   if (clean.id && !isValidUUID(clean.id)) {
     delete clean.id;
   }
+
+  // Ensure display_order fits within 32-bit signed integer (<= 2,147,483,647)
+  if (clean.display_order !== undefined && clean.display_order !== null) {
+    const num = Number(clean.display_order);
+    if (isNaN(num) || num > 2147483647) {
+      clean.display_order = Math.floor(Date.now() / 1000);
+    } else {
+      clean.display_order = Math.max(0, Math.floor(num));
+    }
+  } else {
+    clean.display_order = 1;
+  }
+
   return clean;
 }
 
@@ -411,7 +424,7 @@ export async function getServices() {
 }
 
 export async function createService(item) {
-  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Math.floor(Date.now() / 1000), ...item };
   const cleanPayload = sanitizePayload(newItem);
   try {
     const { data, error } = await supabase.from('website_services').insert([cleanPayload]).select();
@@ -467,7 +480,7 @@ export async function getTargetAudiences() {
 }
 
 export async function createTargetAudience(item) {
-  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Math.floor(Date.now() / 1000), ...item };
   const cleanPayload = sanitizePayload(newItem);
   try {
     const { data, error } = await supabase.from('website_audiences').insert([cleanPayload]).select();
@@ -517,7 +530,7 @@ export async function getWhyChooseUs() {
 }
 
 export async function createWhyChooseUs(item) {
-  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Math.floor(Date.now() / 1000), ...item };
   const cleanPayload = sanitizePayload(newItem);
   try {
     const { data, error } = await supabase.from('website_benefits').insert([cleanPayload]).select();
@@ -567,7 +580,7 @@ export async function getPortfolio() {
 }
 
 export async function createPortfolioItem(item) {
-  const newItem = { published: true, featured: false, display_order: Date.now(), ...item };
+  const newItem = { published: true, featured: false, display_order: Math.floor(Date.now() / 1000), ...item };
   const cleanPayload = sanitizePortfolioPayload(newItem);
   
   if (!missingTablesSet.has('website_portfolio')) {
@@ -647,7 +660,7 @@ export async function getPackages() {
 }
 
 export async function createPackage(item) {
-  const newItem = { active: true, featured: false, display_order: Date.now(), ...item };
+  const newItem = { active: true, featured: false, display_order: Math.floor(Date.now() / 1000), ...item };
   const cleanPayload = sanitizePayload(newItem);
   try {
     const { data, error } = await supabase.from('website_packages').insert([cleanPayload]).select();
@@ -697,7 +710,7 @@ export async function getProcessSteps() {
 }
 
 export async function createProcessStep(item) {
-  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Math.floor(Date.now() / 1000), ...item };
   const cleanPayload = sanitizePayload(newItem);
   try {
     const { data, error } = await supabase.from('website_process').insert([cleanPayload]).select();
@@ -747,7 +760,7 @@ export async function getFaqs() {
 }
 
 export async function createFaq(item) {
-  const newItem = { is_active: true, display_order: Date.now(), ...item };
+  const newItem = { is_active: true, display_order: Math.floor(Date.now() / 1000), ...item };
   const cleanPayload = sanitizePayload(newItem);
   try {
     const { data, error } = await supabase.from('website_faqs').insert([cleanPayload]).select();
