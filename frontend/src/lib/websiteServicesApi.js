@@ -299,6 +299,25 @@ function sanitizePayload(payload) {
   return clean;
 }
 
+// Helper to sanitize portfolio payload for PostgreSQL TEXT[] columns
+function sanitizePortfolioPayload(payload) {
+  const clean = sanitizePayload(payload);
+
+  if (clean.technologies !== undefined && clean.technologies !== null) {
+    if (typeof clean.technologies === 'string') {
+      clean.technologies = clean.technologies.split(',').map(s => s.trim()).filter(Boolean);
+    } else if (Array.isArray(clean.technologies)) {
+      clean.technologies = clean.technologies.map(s => String(s).trim()).filter(Boolean);
+    } else {
+      clean.technologies = [];
+    }
+  } else {
+    clean.technologies = [];
+  }
+
+  return clean;
+}
+
 // Local storage helper fallback
 function getLocal(key, defaultVal) {
   try {
@@ -549,7 +568,7 @@ export async function getPortfolio() {
 
 export async function createPortfolioItem(item) {
   const newItem = { published: true, featured: false, display_order: Date.now(), ...item };
-  const cleanPayload = sanitizePayload(newItem);
+  const cleanPayload = sanitizePortfolioPayload(newItem);
   
   if (!missingTablesSet.has('website_portfolio')) {
     try {
@@ -559,23 +578,8 @@ export async function createPortfolioItem(item) {
         setLocal('portfolio', [...current, data[0]]);
         return data[0];
       } else if (error) {
-        // Fallback for 400 Bad Request (e.g. text vs text[] column type mismatch or missing updated_at)
-        const fallbackPayload = { ...cleanPayload };
-        if (Array.isArray(fallbackPayload.technologies)) {
-          fallbackPayload.technologies = fallbackPayload.technologies.join(', ');
-        }
-        delete fallbackPayload.updated_at;
-
-        try {
-          const { data: retryData, error: retryError } = await supabase.from('website_portfolio').insert([fallbackPayload]).select();
-          if (!retryError && retryData && retryData[0]) {
-            const current = getLocal('portfolio', INITIAL_PORTFOLIO);
-            setLocal('portfolio', [...current, retryData[0]]);
-            return retryData[0];
-          }
-        } catch (err) {}
-
-        if (error.code === 'PGRST204' || error.status === 404 || error.status === 400 || error.message?.includes('Could not find')) {
+        console.warn('Supabase portfolio insert warning:', error.message);
+        if (error.code === 'PGRST204' || error.status === 404 || error.message?.includes('Could not find')) {
           missingTablesSet.add('website_portfolio');
         }
       }
@@ -595,27 +599,15 @@ export async function updatePortfolioItem(id, payload) {
   if (!missingTablesSet.has('website_portfolio')) {
     try {
       if (isValidUUID(id)) {
-        const cleanPayload = sanitizePayload(payload);
+        const cleanPayload = sanitizePortfolioPayload(payload);
         const { error } = await supabase.from('website_portfolio').update(cleanPayload).eq('id', id);
         if (!error) {
           const current = getLocal('portfolio', INITIAL_PORTFOLIO);
           const updated = current.map(item => item.id === id ? { ...item, ...payload } : item);
           setLocal('portfolio', updated);
           return true;
-        } else if (error && (error.status === 404 || error.status === 400 || error.code === 'PGRST204')) {
-          const fallbackPayload = { ...cleanPayload };
-          if (Array.isArray(fallbackPayload.technologies)) {
-            fallbackPayload.technologies = fallbackPayload.technologies.join(', ');
-          }
-          delete fallbackPayload.updated_at;
-          try {
-            const { error: retryErr } = await supabase.from('website_portfolio').update(fallbackPayload).eq('id', id);
-            if (retryErr) {
-              missingTablesSet.add('website_portfolio');
-            }
-          } catch (e) {
-            missingTablesSet.add('website_portfolio');
-          }
+        } else if (error && (error.status === 404 || error.code === 'PGRST204')) {
+          missingTablesSet.add('website_portfolio');
         }
       }
     } catch (e) {
