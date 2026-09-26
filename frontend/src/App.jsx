@@ -43,6 +43,7 @@ function App() {
 
         {/* TOOL DETAILS */}
         <Route path="/tool/:id" element={<ToolDetails />} />
+        <Route path="/tools/:id" element={<ToolDetails />} />
 
         {/* CHATS SIDEBAR PAGE */}
         <Route path="/chats" element={<Chats />} />

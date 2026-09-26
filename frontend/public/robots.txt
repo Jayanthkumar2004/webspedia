@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap URL for Search Engine Crawlers
+Sitemap: https://webspedia.vercel.app/sitemap.xml

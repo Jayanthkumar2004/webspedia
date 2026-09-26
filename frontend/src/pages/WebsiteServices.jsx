@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SeoHead from '../components/SeoHead';
 import { supabase } from '../lib/supabase';
 import { ClayCard, ClayButton, ClayBadge, ClayInput } from '../components/clay';
 import {
@@ -282,6 +283,23 @@ export default function WebsiteServices() {
 
   return (
     <div className="page-container">
+      <SeoHead
+        title="Custom Web Development Services & Pricing | Webspedia"
+        description="Transform your business with modern, mobile-friendly, high-converting custom websites built by Webspedia. Professional web design, React apps, and custom web development."
+        keywords="web development, custom website design, React website, web design services, professional website builder, Webspedia"
+        canonicalUrl="https://webspedia.vercel.app/website-services"
+        ogImage="https://webspedia.vercel.app/logo.png"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "ProfessionalService",
+          "name": "Webspedia Web Development Services",
+          "url": "https://webspedia.vercel.app/website-services",
+          "logo": "https://webspedia.vercel.app/logo.png",
+          "image": "https://webspedia.vercel.app/logo.png",
+          "description": "High-converting, mobile-responsive custom websites and web applications built using React, Vite, and modern UI design.",
+          "priceRange": "₹5,000 - ₹50,000+"
+        }}
+      />
       <Navbar />
 
       <main className="website-services-wrapper">

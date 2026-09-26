@@ -6,6 +6,7 @@ import PromotedWebsites from '../components/PromotedWebsites';
 import FeedbackSection from '../components/FeedbackSection';
 import Footer from '../components/Footer';
 import SearchBar from '../components/SearchBar';
+import SeoHead from '../components/SeoHead';
 import { supabase } from '../lib/supabase';
 import { Search, ChevronLeft, ChevronRight, Sparkles, Cpu, Code, PenTool, Flame, Layers, X, RotateCcw } from 'lucide-react';
 import '../styles/home.css';
@@ -173,6 +174,33 @@ export default function Home() {
 
   return (
     <div className="page-container">
+      <SeoHead
+        title="Webspedia - Discover Top AI Tools & Professional Web Development Services"
+        description="Explore Webspedia's curated directory of top AI tools, reviews, and request custom, high-converting professional web development services for your brand."
+        keywords="AI tools, webspedia, AI directory, website development, custom web app, ChatGPT, Midjourney, AI reviews"
+        canonicalUrl="https://webspedia.vercel.app/"
+        ogImage="https://webspedia.vercel.app/logo.png"
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Webspedia",
+            "url": "https://webspedia.vercel.app/",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://webspedia.vercel.app/?search={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Webspedia",
+            "url": "https://webspedia.vercel.app/",
+            "logo": "https://webspedia.vercel.app/logo.png"
+          }
+        ]}
+      />
       <Navbar />
 
       <main className="main-content">

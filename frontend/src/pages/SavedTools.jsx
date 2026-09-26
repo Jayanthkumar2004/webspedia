@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import ToolCard from "../components/ToolCard";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import SeoHead from "../components/SeoHead";
 import { ClayCard, ClayBadge, ClayEmptyState, ClaySkeleton } from "../components/clay";
 import { Bookmark, Sparkles } from "lucide-react";
 import "../styles/toolcard.css";
@@ -49,6 +50,12 @@ export default function SavedTools() {
 
   return (
     <div className="page-container">
+      <SeoHead
+        title="Saved AI Tools - Webspedia"
+        description="Your personal collection of bookmarked AI tools on Webspedia for quick access."
+        canonicalUrl="https://webspedia.vercel.app/saved-tools"
+        noindex={true}
+      />
       <Navbar />
 
       <main className="main-content" style={{ paddingTop: "32px" }}>

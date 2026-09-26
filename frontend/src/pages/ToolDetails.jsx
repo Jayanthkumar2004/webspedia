@@ -3,6 +3,16 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SeoHead from '../components/SeoHead';
+
+function createSlug(title) {
+  if (!title) return 'ai-tool';
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
 import { 
   Check, 
   ExternalLink, 
@@ -71,34 +81,49 @@ export default function ToolDetails() {
     let channel;
 
     const init = async () => {
-      if (id) trackToolClick(id);
-
       const { data } = await supabase.auth.getUser();
       const currentUser = data?.user;
       setUser(currentUser);
 
-      const { data: toolData } = await supabase
-        .from('tools')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+      let targetTool = null;
 
-      setTool(toolData);
+      if (isUUID) {
+        const { data: toolData } = await supabase
+          .from('tools')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+        targetTool = toolData;
+      }
+
+      if (!targetTool) {
+        const { data: allTools } = await supabase.from('tools').select('*');
+        if (allTools) {
+          targetTool = allTools.find(t => t.id === id || createSlug(t.title) === id);
+        }
+      }
+
+      if (!targetTool) return;
+
+      setTool(targetTool);
+      const realToolId = targetTool.id;
+      trackToolClick(realToolId);
 
       if (currentUser) {
         const { data: savedData } = await supabase
           .from("saved_tools")
           .select("id")
-          .eq("tool_id", id)
+          .eq("tool_id", realToolId)
           .eq("user_id", currentUser.id)
           .maybeSingle();
 
         if (savedData) setSaved(true);
       }
 
-      await fetchCommentsAndRatings();
+      await fetchCommentsAndRatings(realToolId);
 
-      const channelName = `comments-${id}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const channelName = `comments-${realToolId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       channel = supabase
         .channel(channelName)
         .on(
@@ -107,9 +132,9 @@ export default function ToolDetails() {
             event: '*',
             schema: 'public',
             table: 'comments',
-            filter: `tool_id=eq.${id}`
+            filter: `tool_id=eq.${realToolId}`
           },
-          () => fetchCommentsAndRatings()
+          () => fetchCommentsAndRatings(realToolId)
         );
 
       channel.subscribe();
@@ -122,19 +147,20 @@ export default function ToolDetails() {
     };
   }, [id]);
 
-  const fetchCommentsAndRatings = async () => {
+  const fetchCommentsAndRatings = async (targetToolId = tool?.id || id) => {
+    if (!targetToolId) return;
     // Fetch review comments
     const { data: commentsData } = await supabase
       .from('comments')
       .select('*')
-      .eq('tool_id', id)
+      .eq('tool_id', targetToolId)
       .order('created_at', { ascending: false });
 
     // Fetch ratings directly from database 'ratings' table
     const { data: ratingsData } = await supabase
       .from('ratings')
       .select('*')
-      .eq('tool_id', id)
+      .eq('tool_id', targetToolId)
       .order('created_at', { ascending: false });
 
     // Build map of user_id -> rating from ratings table
@@ -454,6 +480,34 @@ export default function ToolDetails() {
 
   return (
     <div className="page-container">
+      <SeoHead
+        title={`${tool.title} - AI Tool Features & Reviews | Webspedia`}
+        description={tool.description ? tool.description.slice(0, 160) : `Explore ${tool.title} features, pricing, and reviews on Webspedia.`}
+        keywords={`${tool.title}, ${tool.category || 'AI tool'}, Webspedia, AI software, review`}
+        canonicalUrl={`https://webspedia.vercel.app/tools/${createSlug(tool.title)}`}
+        ogImage={tool.image_url || "https://webspedia.vercel.app/logo.png"}
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": tool.title,
+            "operatingSystem": "Web",
+            "applicationCategory": tool.category || "BusinessApplication",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "description": tool.description,
+            "image": tool.image_url || "https://webspedia.vercel.app/logo.png"
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://webspedia.vercel.app/" },
+              { "@type": "ListItem", "position": 2, "name": tool.category || "AI Tools", "item": "https://webspedia.vercel.app/" },
+              { "@type": "ListItem", "position": 3, "name": tool.title, "item": `https://webspedia.vercel.app/tools/${createSlug(tool.title)}` }
+            ]
+          }
+        ]}
+      />
       <Navbar />
 
       <main className="tool-details-wrapper">
