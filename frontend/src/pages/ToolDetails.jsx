@@ -535,12 +535,20 @@ export default function ToolDetails() {
 
   const totalRatingsCount = Object.values(ratingsDistribution).reduce((a, b) => a + b, 0) || 1;
 
+  const titleHasAi = (tool.title || '').toLowerCase().includes('ai');
+  const seoTitle = titleHasAi 
+    ? `${tool.title} – Features, Uses & AI Tools | Webspedia`
+    : `${tool.title} AI – Features, Uses & AI Tools | Webspedia`;
+
+  const categoryTerm = tool.category ? tool.category.toLowerCase() : 'design & productivity';
+  const seoDescription = `Explore ${tool.title} and its AI-powered ${categoryTerm} features. Discover what ${tool.title} can do, who it is useful for, and related AI tools on Webspedia.`;
+
   return (
     <div className="page-container">
       <SeoHead
-        title={`${tool.title} - AI Tool Features & Reviews | Webspedia`}
-        description={tool.description ? tool.description.slice(0, 160) : `Explore ${tool.title} features, pricing, and reviews on Webspedia.`}
-        keywords={`${tool.title}, ${tool.category || 'AI tool'}, Webspedia, AI software, review`}
+        title={seoTitle}
+        description={seoDescription}
+        keywords={`${tool.title}, ${tool.title} AI, ${tool.category || 'AI tool'}, best AI tools, free AI tools, ${tool.title} features, Webspedia`}
         canonicalUrl={`https://webspedia.vercel.app/tools/${createSlug(tool.title)}`}
         ogImage={tool.image_url || "https://webspedia.vercel.app/logo.png"}
         structuredData={[
@@ -550,8 +558,8 @@ export default function ToolDetails() {
             "name": tool.title,
             "operatingSystem": "Web",
             "applicationCategory": tool.category || "BusinessApplication",
-            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-            "description": tool.description,
+            "url": `https://webspedia.vercel.app/tools/${createSlug(tool.title)}`,
+            "description": tool.description || seoDescription,
             "image": tool.image_url || "https://webspedia.vercel.app/logo.png"
           },
           {

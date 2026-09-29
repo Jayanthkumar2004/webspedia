@@ -28,3 +28,12 @@ export const handleImageError = (e, fallback = DEFAULT_TOOL_ICON) => {
     e.target.src = fallback;
   }
 };
+
+export const createSlug = (title) => {
+  if (!title) return 'ai-tool';
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};

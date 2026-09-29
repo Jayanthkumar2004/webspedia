@@ -175,9 +175,9 @@ export default function Home() {
   return (
     <div className="page-container">
       <SeoHead
-        title="Webspedia - Discover Top AI Tools & Professional Web Development Services"
-        description="Explore Webspedia's curated directory of top AI tools, reviews, and request custom, high-converting professional web development services for your brand."
-        keywords="AI tools, webspedia, AI directory, website development, custom web app, ChatGPT, Midjourney, AI reviews"
+        title="Webspedia – Discover the Best AI Tools"
+        description="Discover the best AI tools for productivity, coding, design, writing, video, business and more. Explore useful AI tools on Webspedia."
+        keywords="AI tools, best AI tools, free AI tools, AI tools directory, AI tools for students, AI tools for developers, AI productivity tools, AI coding tools, AI writing tools, AI design tools, AI video tools, AI business tools, artificial intelligence tools"
         canonicalUrl="https://webspedia.vercel.app/"
         ogImage="https://webspedia.vercel.app/logo.png"
         structuredData={[

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from '../lib/supabase';
 import { 
   Star, 
@@ -14,7 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { trackToolClick } from '../lib/analyticsTracker';
-import { DEFAULT_TOOL_ICON, handleImageError } from '../utils/placeholder';
+import { DEFAULT_TOOL_ICON, handleImageError, createSlug } from '../utils/placeholder';
 import '../styles/toolcard.css';
 
 export default function ToolCard({ tool }) {
@@ -145,9 +145,12 @@ export default function ToolCard({ tool }) {
     setTimeout(() => setCopied(false), 2200);
   };
 
+  const toolSlug = createSlug(tool.title);
+  const toolUrl = `/tools/${toolSlug}`;
+
   const goToDetails = () => {
     trackToolClick(tool.id);
-    navigate(`/tool/${tool.id}`);
+    navigate(toolUrl);
   };
 
   const shortTitle = tool.title?.length > 24
@@ -165,7 +168,7 @@ export default function ToolCard({ tool }) {
         <div className="tool-logo-box clay-inset">
           <img
             src={tool.image_url || DEFAULT_TOOL_ICON}
-            alt={tool.title}
+            alt={tool.title ? `${tool.title} AI tool` : 'AI tool icon'}
             onError={(e) => handleImageError(e, DEFAULT_TOOL_ICON)}
             className="tool-logo-img"
           />
@@ -195,7 +198,7 @@ export default function ToolCard({ tool }) {
 
       {/* CONTENT */}
       <div className="tool-content">
-        <h2 className="tool-title-text">{shortTitle}</h2>
+        <h3 className="tool-title-text">{shortTitle}</h3>
         <p className="tool-desc-text">{shortDesc}</p>
 
         <div className="tool-category-badge clay-badge">
@@ -211,10 +214,10 @@ export default function ToolCard({ tool }) {
         </div>
 
         {/* CTA BUTTON */}
-        <button className="clay-button clay-button-primary tool-cta-btn" onClick={goToDetails} type="button">
+        <Link to={toolUrl} className="clay-button clay-button-primary tool-cta-btn" onClick={(e) => { e.stopPropagation(); trackToolClick(tool.id); }}>
           <span>View Tool</span>
           <ArrowRight size={14} />
-        </button>
+        </Link>
       </div>
 
       {/* SHARE MODAL OVERLAY */}
